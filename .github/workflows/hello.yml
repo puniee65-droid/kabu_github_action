@@ -3,6 +3,7 @@ name: Hello World
 on:
   push:
     branches: [main]
+    paths: [hello.py]
   workflow_dispatch:
 
 jobs:
