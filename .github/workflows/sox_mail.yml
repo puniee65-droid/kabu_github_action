@@ -1,0 +1,25 @@
+name: SOX Mail
+
+on:
+  schedule:
+    # 平日 07:00 JST (前日22:00 UTC) に実行
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  send-sox-mail:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install yfinance
+      - name: Send SOX mail
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        run: python sox_mail.py
