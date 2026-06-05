@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
-now = datetime.now()
+JST = timezone(timedelta(hours=9))
+now = datetime.now(JST)
 filename = now.strftime("%Y-%m-%d_%H-%M-%S") + ".txt"
 content = now.strftime("%Y年%m月%d日 %H時%M分%S秒")
 
