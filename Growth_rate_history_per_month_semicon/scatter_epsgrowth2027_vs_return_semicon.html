@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI半導体_光電融合_統合 — EPS成長率(2027vs2026) × 1ヶ月株価上昇率</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100dvh; background: #131722; color: #d1d4dc;
+      font-family: 'Segoe UI', sans-serif; overflow: hidden;
+    }
+
+    /* ── アプリ全体: チャート + サイドパネル ── */
+    #app { display: flex; flex-direction: row; height: 100dvh; }
+
+    #chart-area { flex: 1; min-width: 0; min-height: 0; }
+    #plotly-chart { width: 100%; height: 100%; }
+
+    /* ══ サイドパネル（PC: 右側縦配置） ══ */
+    #side-panel {
+      width: 195px; flex-shrink: 0;
+      display: flex; flex-direction: column;
+      background: #181c28; border-left: 1px solid #2a2e39; overflow: hidden;
+    }
+
+    /* ── セクションタイトル ── */
+    .section-title {
+      padding: 8px 12px 4px;
+      font-size: 10px; color: #666;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      flex-shrink: 0;
+    }
+
+    /* ── クラスボタンエリア ── */
+    .band-section {
+      flex: 1; display: flex; flex-direction: column; min-height: 0;
+    }
+    .band-list {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      overflow-y: auto; padding: 2px 6px; gap: 2px;
+    }
+    .band-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 9px;
+      background: none; border: 1px solid transparent; border-radius: 5px;
+      color: #999; cursor: pointer;
+      font-size: 11px; font-family: 'Segoe UI', sans-serif; text-align: left;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .band-btn:hover { background: #242836; color: #d1d4dc; }
+    .band-btn.active {
+      background: rgba(255,255,255,0.09); color: #fff;
+      border-color: #3a3f50;
+    }
+    .band-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .band-count { font-size: 9px; color: #555; margin-left: auto; padding-left: 4px; }
+    .band-btn.active .band-count { color: #888; }
+
+    /* ── 区切り線 ── */
+    .panel-divider { height: 1px; background: #2a2e39; margin: 6px 8px; flex-shrink: 0; }
+
+    /* ── ズームエリア ── */
+    .zoom-section { flex-shrink: 0; padding: 4px 8px 10px; }
+    .zoom-buttons { display: flex; flex-direction: row; gap: 5px; }
+    .zoom-btn {
+      flex: 1; padding: 8px 4px;
+      background: #242836; border: 1px solid #2a2e39; border-radius: 5px;
+      color: #d1d4dc; cursor: pointer;
+      font-size: 16px; font-family: 'Segoe UI', sans-serif;
+      transition: background 0.15s;
+    }
+    .zoom-btn:hover { background: #2e3347; color: #fff; }
+
+    /* ── 移動パッド（PC: d-pad 3×3） ── */
+    .pan-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px; margin-top: 3px;
+    }
+    .pan-btn {
+      height: 28px; padding: 0;
+      background: #242836; border: 1px solid #2a2e39; border-radius: 4px;
+      color: #d1d4dc; cursor: pointer; font-size: 15px;
+      font-family: 'Segoe UI', sans-serif; transition: background 0.15s;
+    }
+    .pan-btn:hover { background: #2e3347; color: #fff; }
+    .pan-btn.ph { background: transparent; border-color: transparent; pointer-events: none; }
+
+    /* ══ モバイル（≤767px）: パネルを下に ══ */
+    @media (max-width: 767px) {
+      #app { flex-direction: column; }
+      #side-panel {
+        width: 100%; height: 160px; flex-shrink: 0;
+        flex-direction: row;
+        border-left: none; border-top: 1px solid #2a2e39;
+        overflow: hidden;
+      }
+
+      /* ズーム＋移動を左の固定列へ（order で先頭に） */
+      .zoom-section {
+        order: -1;
+        width: 78px; flex-shrink: 0;
+        border-right: 1px solid #2a2e39;
+        padding: 5px 4px;
+        display: flex; flex-direction: column;
+        justify-content: flex-start; align-items: stretch; gap: 4px;
+      }
+      .zoom-buttons { flex-direction: column; gap: 3px; }
+      .zoom-btn { font-size: 13px; padding: 5px 2px; }
+
+      /* 移動パッド: 2×2 コンパクトグリッド */
+      .pan-pad { grid-template-columns: repeat(2, 1fr); gap: 3px; margin-top: 0; }
+      .pan-btn.ph { display: none; }
+      .pan-btn[data-dir="up"]    { order: 1; }
+      .pan-btn[data-dir="right"] { order: 2; }
+      .pan-btn[data-dir="left"]  { order: 3; }
+      .pan-btn[data-dir="down"]  { order: 4; }
+      .pan-btn { height: 22px; font-size: 13px; }
+
+      /* クラスボタンを横スクロール */
+      .band-section { flex: 1; min-width: 0; flex-direction: row; align-items: center; }
+      .band-list {
+        flex-direction: row;
+        overflow-x: auto; overflow-y: hidden;
+        padding: 5px 6px; gap: 5px; align-items: center;
+      }
+      .band-btn {
+        flex-direction: column; align-items: center; text-align: center;
+        min-width: 66px; width: auto; padding: 5px 5px; font-size: 10px;
+      }
+      .band-count { margin-left: 0; }
+
+      /* モバイルではセクションタイトルと区切り線を非表示 */
+      .section-title { display: none; }
+      .panel-divider  { display: none; }
+    }
+
+    /* ── ローディングオーバーレイ ── */
+    #loading-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(19,23,34,0.88);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 18px;
+    }
+    .loading-spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #2a2e39;
+      border-top-color: #4D96FF;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: #8899bb; letter-spacing: 0.04em; }
+    .loading-sub  { font-size: 11px; color: #556; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- ローディングオーバーレイ -->
+  <div id="loading-overlay" v-if="isLoading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">リアルタイム株価を取得中...</div>
+    <div class="loading-sub">{{ loadingProgress }}</div>
+  </div>
+
+  <div id="chart-area">
+    <div id="plotly-chart"></div>
+  </div>
+
+  <div id="side-panel">
+    <!-- クラスフィルター（PC: 上部、mobile: 右側） -->
+    <div class="band-section">
+      <div class="section-title">現在株価クラス</div>
+      <div class="band-list">
+        <!-- 全表示ボタン -->
+        <button
+          :class="['band-btn', { active: selectedBand === null }]"
+          @click="selectBand(null)"
+        >
+          <span class="band-dot" style="background:#888"></span>
+          全表示
+          <span class="band-count">{{ totalCount }}銘柄</span>
+        </button>
+        <!-- クラスボタン -->
+        <button
+          v-for="(b, i) in activeBands"
+          :key="i"
+          :class="['band-btn', { active: selectedBand === i }]"
+          @click="selectBand(i)"
+        >
+          <span class="band-dot" :style="{ background: b.color }"></span>
+          {{ b.label }}
+          <span class="band-count">{{ b.count }}銘柄</span>
+        </button>
+      </div>
+      <div class="panel-divider"></div>
+    </div>
+
+    <!-- ズーム＋移動ボタン（PC: 下部、mobile: 左） -->
+    <div class="zoom-section">
+      <div class="section-title">ズーム</div>
+      <div class="zoom-buttons">
+        <button class="zoom-btn" @click="zoom(0.65)" title="ズームイン">＋</button>
+        <button class="zoom-btn" @click="zoom(1.54)" title="ズームアウト">－</button>
+        <button class="zoom-btn" @click="resetZoom()" title="リセット">⟳</button>
+      </div>
+      <div class="section-title" style="margin-top:6px">移動</div>
+      <div class="pan-pad">
+        <button class="pan-btn ph" disabled></button>
+        <button class="pan-btn" data-dir="up"    @click="pan(0,1)"   title="上へ">↑</button>
+        <button class="pan-btn ph" disabled></button>
+        <button class="pan-btn" data-dir="left"  @click="pan(-1,0)"  title="左へ">←</button>
+        <button class="pan-btn ph" disabled></button>
+        <button class="pan-btn" data-dir="right" @click="pan(1,0)"   title="右へ">→</button>
+        <button class="pan-btn ph" disabled></button>
+        <button class="pan-btn" data-dir="down"  @click="pan(0,-1)"  title="下へ">↓</button>
+        <button class="pan-btn ph" disabled></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const FIGURE     = {"data":[{"customdata":["\u003cb\u003eQDレーザ\u003c\u002fb\u003e（6613）　(赤字→黒字転換)\u003cbr\u003e現在株価: 2,424 円\u003cbr\u003eEPS成長率 2027vs2026: +105.8%\u003cbr\u003eEPS_2025: -10.68 円　EPS_2026: -8.55 円\u003cbr\u003eEPS_2027会社予想: -1.40 円\u003cbr\u003eEPS_2027アナリスト予想: 0.50 円\u003cbr\u003e1ヶ月上昇率: +66.14%　順位: 5 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e浜松ホトニクス\u003c\u002fb\u003e（6965）\u003cbr\u003e現在株価: 2,863 円\u003cbr\u003eEPS成長率 2027vs2026: +16.7%\u003cbr\u003eEPS_2025: 47.32 円　EPS_2026: 47.32 円\u003cbr\u003eEPS_2027会社予想: 55.70 円\u003cbr\u003eEPS_2027アナリスト予想: 55.20 円\u003cbr\u003e1ヶ月上昇率: +42.97%　順位: 11 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eソシオネクスト\u003c\u002fb\u003e（6526）\u003cbr\u003e現在株価: 2,635 円\u003cbr\u003eEPS成長率 2027vs2026: +74.3%\u003cbr\u003eEPS_2025: 109.78 円　EPS_2026: 49.74 円\u003cbr\u003eEPS_2027会社予想: 57.10 円\u003cbr\u003eEPS_2027アナリスト予想: 86.70 円\u003cbr\u003e1ヶ月上昇率: +31.13%　順位: 17 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e日本化薬\u003c\u002fb\u003e（4272）\u003cbr\u003e現在株価: 2,132 円\u003cbr\u003eEPS成長率 2027vs2026: -4.7%\u003cbr\u003eEPS_2025: 107.17 円　EPS_2026: 161.18 円\u003cbr\u003eEPS_2027会社予想: 150.20 円\u003cbr\u003eEPS_2027アナリスト予想: 153.60 円\u003cbr\u003e1ヶ月上昇率: +22.00%　順位: 25 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eニコン\u003c\u002fb\u003e（7731）　(赤字→黒字転換)\u003cbr\u003e現在株価: 1,844 円\u003cbr\u003eEPS成長率 2027vs2026: +114.5%\u003cbr\u003eEPS_2025: 17.86 円　EPS_2026: -261.57 円\u003cbr\u003eEPS_2027会社予想: 30.40 円\u003cbr\u003eEPS_2027アナリスト予想: 37.90 円\u003cbr\u003e1ヶ月上昇率: +8.15%　順位: 39 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eAppier Group\u003c\u002fb\u003e（4180）\u003cbr\u003e現在株価: 950 円\u003cbr\u003eEPS成長率 2027vs2026: +74.2%\u003cbr\u003eEPS_2025: 25.14 円　EPS_2026: 25.14 円\u003cbr\u003eEPS_2027会社予想: 34.00 円\u003cbr\u003eEPS_2027アナリスト予想: 43.80 円\u003cbr\u003e1ヶ月上昇率: +6.98%　順位: 41 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eNTT\u003c\u002fb\u003e（9432）\u003cbr\u003e現在株価: 150 円\u003cbr\u003eEPS成長率 2027vs2026: -0.1%\u003cbr\u003eEPS_2025: 11.96 円　EPS_2026: 12.61 円\u003cbr\u003eEPS_2027会社予想: 12.00 円\u003cbr\u003eEPS_2027アナリスト予想: 12.60 円\u003cbr\u003e1ヶ月上昇率: -1.06%　順位: 53 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e大日印\u003c\u002fb\u003e（7912）\u003cbr\u003e現在株価: 2,770 円\u003cbr\u003eEPS成長率 2027vs2026: -4.6%\u003cbr\u003eEPS_2025: 238.90 円　EPS_2026: 235.49 円\u003cbr\u003eEPS_2027会社予想: 220.20 円\u003cbr\u003eEPS_2027アナリスト予想: 224.70 円\u003cbr\u003e1ヶ月上昇率: -6.26%　順位: 60 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eKudan\u003c\u002fb\u003e（4425）　(赤字拡大)\u003cbr\u003e現在株価: 1,831 円\u003cbr\u003eEPS成長率 2027vs2026: -95.1%\u003cbr\u003eEPS_2025: -72.85 円　EPS_2026: -16.66 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: -32.50 円\u003cbr\u003e1ヶ月上昇率: -28.89%　順位: 75 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29"],"hovertemplate":"%{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FF6B6B","line":{"color":"rgba(255,255,255,0.3)","width":0.8},"opacity":0.85,"size":10},"mode":"markers+text","name":"〜3,000円","text":["QDレーザ\u003cbr\u003e6613  2,424円","浜松ホトニクス\u003cbr\u003e6965  2,863円","ソシオネクスト\u003cbr\u003e6526  2,635円","日本化薬\u003cbr\u003e4272  2,132円","ニコン\u003cbr\u003e7731  1,844円","Appier Group\u003cbr\u003e4180  950円","NTT\u003cbr\u003e9432  150円","大日印\u003cbr\u003e7912  2,770円","Kudan\u003cbr\u003e4425  1,831円"],"textfont":{"color":"#FF6B6B","size":10},"textposition":"top center","x":[105.8,16.7,74.3,-4.7,114.5,74.2,-0.1,-4.6,-95.1],"y":[66.14,42.97,31.13,22.0,8.15,6.98,-1.06,-6.26,-28.89],"type":"scatter"},{"customdata":["\u003cb\u003eSUMCO\u003c\u002fb\u003e（3436）　(赤字縮小)\u003cbr\u003e現在株価: 3,994 円\u003cbr\u003eEPS成長率 2027vs2026: +96.1%\u003cbr\u003eEPS_2025: -33.60 円　EPS_2026: -33.60 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: -1.30 円\u003cbr\u003e1ヶ月上昇率: +70.14%　順位: 4 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eデクセリアルズ（テクセリアルズ）\u003c\u002fb\u003e（4980）\u003cbr\u003e現在株価: 4,038 円\u003cbr\u003eEPS成長率 2027vs2026: +4.8%\u003cbr\u003eEPS_2025: 162.04 円　EPS_2026: 166.48 円\u003cbr\u003eEPS_2027会社予想: 164.20 円\u003cbr\u003eEPS_2027アナリスト予想: 174.40 円\u003cbr\u003e1ヶ月上昇率: +64.05%　順位: 6 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eローム\u003c\u002fb\u003e（6963）　(赤字→黒字転換)\u003cbr\u003e現在株価: 5,458 円\u003cbr\u003eEPS成長率 2027vs2026: +123.5%\u003cbr\u003eEPS_2025: -129.71 円　EPS_2026: -410.40 円\u003cbr\u003eEPS_2027会社予想: 75.10 円\u003cbr\u003eEPS_2027アナリスト予想: 96.40 円\u003cbr\u003e1ヶ月上昇率: +59.08%　順位: 7 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eルネサス\u003c\u002fb\u003e（6723）　(赤字→黒字転換)\u003cbr\u003e現在株価: 4,500 円\u003cbr\u003eEPS成長率 2027vs2026: +689.9%\u003cbr\u003eEPS_2025: -28.65 円　EPS_2026: -28.65 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 169.00 円\u003cbr\u003e1ヶ月上昇率: +54.48%　順位: 8 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eTDK\u003c\u002fb\u003e（6762）\u003cbr\u003e現在株価: 4,108 円\u003cbr\u003eEPS成長率 2027vs2026: +16.5%\u003cbr\u003eEPS_2025: 88.10 円　EPS_2026: 103.09 円\u003cbr\u003eEPS_2027会社予想: 118.50 円\u003cbr\u003eEPS_2027アナリスト予想: 120.10 円\u003cbr\u003e1ヶ月上昇率: +53.46%　順位: 9 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e住阪セメ\u003c\u002fb\u003e（5232）\u003cbr\u003e現在株価: 5,439 円\u003cbr\u003eEPS成長率 2027vs2026: +9.4%\u003cbr\u003eEPS_2025: 270.37 円　EPS_2026: 349.58 円\u003cbr\u003eEPS_2027会社予想: 315.50 円\u003cbr\u003eEPS_2027アナリスト予想: 382.30 円\u003cbr\u003e1ヶ月上昇率: +39.28%　順位: 13 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eトクヤマ\u003c\u002fb\u003e（4043）\u003cbr\u003e現在株価: 5,107 円\u003cbr\u003eEPS成長率 2027vs2026: +78.1%\u003cbr\u003eEPS_2025: 325.08 円　EPS_2026: 308.64 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 549.70 円\u003cbr\u003e1ヶ月上昇率: +37.40%　順位: 14 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e京セラ\u003c\u002fb\u003e（6971）\u003cbr\u003e現在株価: 3,483 円\u003cbr\u003eEPS成長率 2027vs2026: -8.7%\u003cbr\u003eEPS_2025: 17.11 円　EPS_2026: 102.70 円\u003cbr\u003eEPS_2027会社予想: 107.00 円\u003cbr\u003eEPS_2027アナリスト予想: 93.80 円\u003cbr\u003e1ヶ月上昇率: +29.53%　順位: 19 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e野村マイクロ・サイエンス\u003c\u002fb\u003e（6254）\u003cbr\u003e現在株価: 4,590 円\u003cbr\u003eEPS成長率 2027vs2026: +169.4%\u003cbr\u003eEPS_2025: 270.76 円　EPS_2026: 100.35 円\u003cbr\u003eEPS_2027会社予想: 289.90 円\u003cbr\u003eEPS_2027アナリスト予想: 270.30 円\u003cbr\u003e1ヶ月上昇率: +21.91%　順位: 26 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eマクニカHD\u003c\u002fb\u003e（3132）\u003cbr\u003e現在株価: 3,110 円\u003cbr\u003eEPS成長率 2027vs2026: +18.2%\u003cbr\u003eEPS_2025: 140.93 円　EPS_2026: 155.53 円\u003cbr\u003eEPS_2027会社予想: 179.20 円\u003cbr\u003eEPS_2027アナリスト予想: 183.90 円\u003cbr\u003e1ヶ月上昇率: +17.89%　順位: 29 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eアンリツ\u003c\u002fb\u003e（6754）\u003cbr\u003e現在株価: 4,547 円\u003cbr\u003eEPS成長率 2027vs2026: +25.0%\u003cbr\u003eEPS_2025: 70.42 円　EPS_2026: 91.19 円\u003cbr\u003eEPS_2027会社予想: 117.20 円\u003cbr\u003eEPS_2027アナリスト予想: 114.00 円\u003cbr\u003e1ヶ月上昇率: +14.42%　順位: 31 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eトリケミカル\u003c\u002fb\u003e（4369）\u003cbr\u003e現在株価: 3,770 円\u003cbr\u003eEPS成長率 2027vs2026: -3.3%\u003cbr\u003eEPS_2025: 152.69 円　EPS_2026: 169.72 円\u003cbr\u003eEPS_2027会社予想: 141.60 円\u003cbr\u003eEPS_2027アナリスト予想: 164.10 円\u003cbr\u003e1ヶ月上昇率: +11.05%　順位: 34 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eADEKA\u003c\u002fb\u003e（4401）\u003cbr\u003e現在株価: 4,292 円\u003cbr\u003eEPS成長率 2027vs2026: +6.6%\u003cbr\u003eEPS_2025: 245.55 円　EPS_2026: 277.94 円\u003cbr\u003eEPS_2027会社予想: 294.30 円\u003cbr\u003eEPS_2027アナリスト予想: 296.20 円\u003cbr\u003e1ヶ月上昇率: +10.68%　順位: 36 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e湖北工業\u003c\u002fb\u003e（6524）\u003cbr\u003e現在株価: 5,930 円\u003cbr\u003eEPS成長率 2027vs2026: +46.6%\u003cbr\u003eEPS_2025: 114.70 円　EPS_2026: 114.70 円\u003cbr\u003eEPS_2027会社予想: 136.50 円\u003cbr\u003eEPS_2027アナリスト予想: 168.20 円\u003cbr\u003e1ヶ月上昇率: +8.41%　順位: 38 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eソニーグループ\u003c\u002fb\u003e（6758）　(赤字→黒字転換)\u003cbr\u003e現在株価: 3,444 円\u003cbr\u003eEPS成長率 2027vs2026: +481.7%\u003cbr\u003eEPS_2025: 182.50 円　EPS_2026: -54.70 円\u003cbr\u003eEPS_2027会社予想: 196.40 円\u003cbr\u003eEPS_2027アナリスト予想: 208.80 円\u003cbr\u003e1ヶ月上昇率: +6.49%　順位: 42 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e加賀電子\u003c\u002fb\u003e（8154）\u003cbr\u003e現在株価: 4,425 円\u003cbr\u003eEPS成長率 2027vs2026: -26.5%\u003cbr\u003eEPS_2025: 325.08 円　EPS_2026: 627.70 円\u003cbr\u003eEPS_2027会社予想: 419.60 円\u003cbr\u003eEPS_2027アナリスト予想: 461.10 円\u003cbr\u003e1ヶ月上昇率: +5.73%　順位: 44 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e荏原製作所\u003c\u002fb\u003e（6361）\u003cbr\u003e現在株価: 5,683 円\u003cbr\u003eEPS成長率 2027vs2026: +39.4%\u003cbr\u003eEPS_2025: 166.31 円　EPS_2026: 166.31 円\u003cbr\u003eEPS_2027会社予想: 217.90 円\u003cbr\u003eEPS_2027アナリスト予想: 231.90 円\u003cbr\u003e1ヶ月上昇率: +4.79%　順位: 45 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eTOWA\u003c\u002fb\u003e（6315）\u003cbr\u003e現在株価: 3,005 円\u003cbr\u003eEPS成長率 2027vs2026: +86.4%\u003cbr\u003eEPS_2025: 108.28 円　EPS_2026: 61.22 円\u003cbr\u003eEPS_2027会社予想: 93.30 円\u003cbr\u003eEPS_2027アナリスト予想: 114.10 円\u003cbr\u003e1ヶ月上昇率: +4.70%　順位: 46 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e太陽ホールディングス\u003c\u002fb\u003e（4626）\u003cbr\u003e現在株価: 4,962 円\u003cbr\u003eEPS成長率 2027vs2026: -0.8%\u003cbr\u003eEPS_2025: 96.59 円　EPS_2026: 215.92 円\u003cbr\u003eEPS_2027会社予想: 216.60 円\u003cbr\u003eEPS_2027アナリスト予想: 214.30 円\u003cbr\u003e1ヶ月上昇率: +3.38%　順位: 47 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e日立\u003c\u002fb\u003e（6501）\u003cbr\u003e現在株価: 5,166 円\u003cbr\u003eEPS成長率 2027vs2026: +16.0%\u003cbr\u003eEPS_2025: 133.85 円　EPS_2026: 176.76 円\u003cbr\u003eEPS_2027会社予想: 188.90 円\u003cbr\u003eEPS_2027アナリスト予想: 205.00 円\u003cbr\u003e1ヶ月上昇率: +2.36%　順位: 48 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eローツェ\u003c\u002fb\u003e（6323）\u003cbr\u003e現在株価: 3,933 円\u003cbr\u003eEPS成長率 2027vs2026: +63.5%\u003cbr\u003eEPS_2025: 134.08 円　EPS_2026: 109.33 円\u003cbr\u003eEPS_2027会社予想: 160.30 円\u003cbr\u003eEPS_2027アナリスト予想: 178.70 円\u003cbr\u003e1ヶ月上昇率: +2.02%　順位: 49 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eTOPPANHD\u003c\u002fb\u003e（7911）\u003cbr\u003e現在株価: 4,562 円\u003cbr\u003eEPS成長率 2027vs2026: +5.9%\u003cbr\u003eEPS_2025: 298.62 円　EPS_2026: 227.07 円\u003cbr\u003eEPS_2027会社予想: 195.10 円\u003cbr\u003eEPS_2027アナリスト予想: 240.40 円\u003cbr\u003e1ヶ月上昇率: -0.98%　順位: 52 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003ePKSH Technology\u003c\u002fb\u003e（3993）\u003cbr\u003e現在株価: 3,155 円\u003cbr\u003eEPS成長率 2027vs2026: +32.3%\u003cbr\u003eEPS_2025: 86.47 円　EPS_2026: 85.59 円\u003cbr\u003eEPS_2027会社予想: 91.80 円\u003cbr\u003eEPS_2027アナリスト予想: 113.20 円\u003cbr\u003e1ヶ月上昇率: -4.83%　順位: 57 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eNEC\u003c\u002fb\u003e（6701）\u003cbr\u003e現在株価: 4,103 円\u003cbr\u003eEPS成長率 2027vs2026: +8.2%\u003cbr\u003eEPS_2025: 131.50 円　EPS_2026: 202.95 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 219.50 円\u003cbr\u003e1ヶ月上昇率: -7.67%　順位: 62 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e富士通\u003c\u002fb\u003e（6702）\u003cbr\u003e現在株価: 3,368 円\u003cbr\u003eEPS成長率 2027vs2026: -30.9%\u003cbr\u003eEPS_2025: 120.93 円　EPS_2026: 254.83 円\u003cbr\u003eEPS_2027会社予想: 178.70 円\u003cbr\u003eEPS_2027アナリスト予想: 176.00 円\u003cbr\u003e1ヶ月上昇率: -8.80%　順位: 64 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eJX金属\u003c\u002fb\u003e（5016）\u003cbr\u003e現在株価: 3,929 円\u003cbr\u003eEPS成長率 2027vs2026: +35.1%\u003cbr\u003eEPS_2025: 73.53 円　EPS_2026: 112.94 円\u003cbr\u003eEPS_2027会社予想: 123.10 円\u003cbr\u003eEPS_2027アナリスト予想: 152.60 円\u003cbr\u003e1ヶ月上昇率: -18.55%　順位: 72 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eフジクラ\u003c\u002fb\u003e（5803）\u003cbr\u003e現在株価: 4,771 円\u003cbr\u003eEPS成長率 2027vs2026: +33.6%\u003cbr\u003eEPS_2025: 55.05 円　EPS_2026: 94.93 円\u003cbr\u003eEPS_2027会社予想: 94.20 円\u003cbr\u003eEPS_2027アナリスト予想: 126.80 円\u003cbr\u003e1ヶ月上昇率: -24.04%　順位: 73 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29"],"hovertemplate":"%{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FFD93D","line":{"color":"rgba(255,255,255,0.3)","width":0.8},"opacity":0.85,"size":10},"mode":"markers+text","name":"3,001〜6,000円","text":["SUMCO\u003cbr\u003e3436  3,994円","デクセリアルズ（テクセリアルズ）\u003cbr\u003e4980  4,038円","ローム\u003cbr\u003e6963  5,458円","ルネサス\u003cbr\u003e6723  4,500円","TDK\u003cbr\u003e6762  4,108円","住阪セメ\u003cbr\u003e5232  5,439円","トクヤマ\u003cbr\u003e4043  5,107円","京セラ\u003cbr\u003e6971  3,483円","野村マイクロ・サイエンス\u003cbr\u003e6254  4,590円","マクニカHD\u003cbr\u003e3132  3,110円","アンリツ\u003cbr\u003e6754  4,547円","トリケミカル\u003cbr\u003e4369  3,770円","ADEKA\u003cbr\u003e4401  4,292円","湖北工業\u003cbr\u003e6524  5,930円","ソニーグループ\u003cbr\u003e6758  3,444円","加賀電子\u003cbr\u003e8154  4,425円","荏原製作所\u003cbr\u003e6361  5,683円","TOWA\u003cbr\u003e6315  3,005円","太陽ホールディングス\u003cbr\u003e4626  4,962円","日立\u003cbr\u003e6501  5,166円","ローツェ\u003cbr\u003e6323  3,933円","TOPPANHD\u003cbr\u003e7911  4,562円","PKSH Technology\u003cbr\u003e3993  3,155円","NEC\u003cbr\u003e6701  4,103円","富士通\u003cbr\u003e6702  3,368円","JX金属\u003cbr\u003e5016  3,929円","フジクラ\u003cbr\u003e5803  4,771円"],"textfont":{"color":"#FFD93D","size":10},"textposition":"top center","x":[96.1,4.8,123.5,689.9,16.5,9.4,78.1,-8.7,169.4,18.2,25.0,-3.3,6.6,46.6,481.7,-26.5,39.4,86.4,-0.8,16.0,63.5,5.9,32.3,8.2,-30.9,35.1,33.6],"y":[70.14,64.05,59.08,54.48,53.46,39.28,37.4,29.53,21.91,17.89,14.42,11.05,10.68,8.41,6.49,5.73,4.79,4.7,3.38,2.36,2.02,-0.98,-4.83,-7.67,-8.8,-18.55,-24.04],"type":"scatter"},{"customdata":["\u003cb\u003eソフトバンクグループ\u003c\u002fb\u003e（9984）\u003cbr\u003e現在株価: 7,491 円\u003cbr\u003eEPS成長率 2027vs2026: -89.5%\u003cbr\u003eEPS_2025: 198.44 円　EPS_2026: 876.78 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 92.00 円\u003cbr\u003e1ヶ月上昇率: +42.20%　順位: 12 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eＮＧＫ\u003c\u002fb\u003e（5333）\u003cbr\u003e現在株価: 6,316 円\u003cbr\u003eEPS成長率 2027vs2026: +40.6%\u003cbr\u003eEPS_2025: 185.96 円　EPS_2026: 206.31 円\u003cbr\u003eEPS_2027会社予想: 285.10 円\u003cbr\u003eEPS_2027アナリスト予想: 290.10 円\u003cbr\u003e1ヶ月上昇率: +35.25%　順位: 15 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e住友ベークライト\u003c\u002fb\u003e（4203）\u003cbr\u003e現在株価: 6,900 円\u003cbr\u003eEPS成長率 2027vs2026: +4.3%\u003cbr\u003eEPS_2025: 208.91 円　EPS_2026: 319.52 円\u003cbr\u003eEPS_2027会社予想: 324.80 円\u003cbr\u003eEPS_2027アナリスト予想: 333.20 円\u003cbr\u003e1ヶ月上昇率: +26.10%　順位: 20 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eKOUSAI ELECTRIC\u003c\u002fb\u003e（6525）\u003cbr\u003e現在株価: 8,211 円\u003cbr\u003eEPS成長率 2027vs2026: +69.1%\u003cbr\u003eEPS_2025: 154.60 円　EPS_2026: 129.00 円\u003cbr\u003eEPS_2027会社予想: 166.10 円\u003cbr\u003eEPS_2027アナリスト予想: 218.10 円\u003cbr\u003e1ヶ月上昇率: +26.09%　順位: 21 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e日産化学\u003c\u002fb\u003e（4021）\u003cbr\u003e現在株価: 7,509 円\u003cbr\u003eEPS成長率 2027vs2026: +4.8%\u003cbr\u003eEPS_2025: 313.26 円　EPS_2026: 368.26 円\u003cbr\u003eEPS_2027会社予想: 384.00 円\u003cbr\u003eEPS_2027アナリスト予想: 386.10 円\u003cbr\u003e1ヶ月上昇率: +10.92%　順位: 35 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e信越化学工業\u003c\u002fb\u003e（4063）\u003cbr\u003e現在株価: 7,758 円\u003cbr\u003eEPS成長率 2027vs2026: +22.7%\u003cbr\u003eEPS_2025: 269.52 円　EPS_2026: 252.68 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 310.00 円\u003cbr\u003e1ヶ月上昇率: +9.56%　順位: 37 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e三菱電\u003c\u002fb\u003e（6503）\u003cbr\u003e現在株価: 6,558 円\u003cbr\u003eEPS成長率 2027vs2026: +25.7%\u003cbr\u003eEPS_2025: 155.70 円　EPS_2026: 198.31 円\u003cbr\u003eEPS_2027会社予想: 232.10 円\u003cbr\u003eEPS_2027アナリスト予想: 249.20 円\u003cbr\u003e1ヶ月上昇率: +7.90%　順位: 40 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e山一電機\u003c\u002fb\u003e（6941）\u003cbr\u003e現在株価: 8,720 円\u003cbr\u003eEPS成長率 2027vs2026: +11.3%\u003cbr\u003eEPS_2025: 259.47 円　EPS_2026: 492.25 円\u003cbr\u003eEPS_2027会社予想: 498.50 円\u003cbr\u003eEPS_2027アナリスト予想: 547.90 円\u003cbr\u003e1ヶ月上昇率: -13.32%　順位: 68 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29"],"hovertemplate":"%{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#6BCB77","line":{"color":"rgba(255,255,255,0.3)","width":0.8},"opacity":0.85,"size":10},"mode":"markers+text","name":"6,001〜9,000円","text":["ソフトバンクグループ\u003cbr\u003e9984  7,491円","ＮＧＫ\u003cbr\u003e5333  6,316円","住友ベークライト\u003cbr\u003e4203  6,900円","KOUSAI ELECTRIC\u003cbr\u003e6525  8,211円","日産化学\u003cbr\u003e4021  7,509円","信越化学工業\u003cbr\u003e4063  7,758円","三菱電\u003cbr\u003e6503  6,558円","山一電機\u003cbr\u003e6941  8,720円"],"textfont":{"color":"#6BCB77","size":10},"textposition":"top center","x":[-89.5,40.6,4.3,69.1,4.8,22.7,25.7,11.3],"y":[42.2,35.25,26.1,26.09,10.92,9.56,7.9,-13.32],"type":"scatter"},{"customdata":["\u003cb\u003e村田製作所\u003c\u002fb\u003e（6981）\u003cbr\u003e現在株価: 9,625 円\u003cbr\u003eEPS成長率 2027vs2026: +41.3%\u003cbr\u003eEPS_2025: 125.11 円　EPS_2026: 127.71 円\u003cbr\u003eEPS_2027会社予想: 161.00 円\u003cbr\u003eEPS_2027アナリスト予想: 180.40 円\u003cbr\u003e1ヶ月上昇率: +98.86%　順位: 2 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e東京応化工業\u003c\u002fb\u003e（4186）\u003cbr\u003e現在株価: 11,010 円\u003cbr\u003eEPS成長率 2027vs2026: +34.0%\u003cbr\u003eEPS_2025: 278.42 円　EPS_2026: 278.42 円\u003cbr\u003eEPS_2027会社予想: 292.00 円\u003cbr\u003eEPS_2027アナリスト予想: 373.00 円\u003cbr\u003e1ヶ月上昇率: +20.08%　順位: 28 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eSCREENホールディングス\u003c\u002fb\u003e（7735）\u003cbr\u003e現在株価: 11,120 円\u003cbr\u003eEPS成長率 2027vs2026: +26.8%\u003cbr\u003eEPS_2025: 511.77 円　EPS_2026: 486.62 円\u003cbr\u003eEPS_2027会社予想: 581.70 円\u003cbr\u003eEPS_2027アナリスト予想: 617.00 円\u003cbr\u003e1ヶ月上昇率: +6.46%　順位: 43 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eサンケン電気\u003c\u002fb\u003e（6707）　(赤字→黒字転換)\u003cbr\u003e現在株価: 9,090 円\u003cbr\u003eEPS成長率 2027vs2026: +112.3%\u003cbr\u003eEPS_2025: 2119.50 円　EPS_2026: -472.86 円\u003cbr\u003eEPS_2027会社予想: 50.00 円\u003cbr\u003eEPS_2027アナリスト予想: 58.20 円\u003cbr\u003e1ヶ月上昇率: -4.12%　順位: 55 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eアルバック\u003c\u002fb\u003e（6728）\u003cbr\u003e現在株価: 9,504 円\u003cbr\u003eEPS成長率 2027vs2026: +45.6%\u003cbr\u003eEPS_2025: 338.74 円　EPS_2026: 338.74 円\u003cbr\u003eEPS_2027会社予想: 376.00 円\u003cbr\u003eEPS_2027アナリスト予想: 493.10 円\u003cbr\u003e1ヶ月上昇率: -5.81%　順位: 58 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29"],"hovertemplate":"%{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#4D96FF","line":{"color":"rgba(255,255,255,0.3)","width":0.8},"opacity":0.85,"size":10},"mode":"markers+text","name":"9,001〜12,000円","text":["村田製作所\u003cbr\u003e6981  9,625円","東京応化工業\u003cbr\u003e4186  11,010円","SCREENホールディングス\u003cbr\u003e7735  11,120円","サンケン電気\u003cbr\u003e6707  9,090円","アルバック\u003cbr\u003e6728  9,504円"],"textfont":{"color":"#4D96FF","size":10},"textposition":"top center","x":[41.3,34.0,26.8,112.3,45.6],"y":[98.86,20.08,6.46,-4.12,-5.81],"type":"scatter"},{"customdata":["\u003cb\u003e太陽誘電\u003c\u002fb\u003e（6976）\u003cbr\u003e現在株価: 14,815 円\u003cbr\u003eEPS成長率 2027vs2026: +83.7%\u003cbr\u003eEPS_2025: 18.67 円　EPS_2026: 118.49 円\u003cbr\u003eEPS_2027会社予想: 143.90 円\u003cbr\u003eEPS_2027アナリスト予想: 217.70 円\u003cbr\u003e1ヶ月上昇率: +124.95%　順位: 1 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eキオクシアホールディングス\u003c\u002fb\u003e（285A）\u003cbr\u003e現在株価: 65,850 円\u003cbr\u003eEPS成長率 2027vs2026: +695.2%\u003cbr\u003eEPS_2025: 519.96 円　EPS_2026: 1024.07 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 8143.50 円\u003cbr\u003e1ヶ月上昇率: +81.31%　順位: 3 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eレゾナックHD\u003c\u002fb\u003e（4004）\u003cbr\u003e現在株価: 18,720 円\u003cbr\u003eEPS成長率 2027vs2026: +285.3%\u003cbr\u003eEPS_2025: 160.49 円　EPS_2026: 160.49 円\u003cbr\u003eEPS_2027会社予想: 425.50 円\u003cbr\u003eEPS_2027アナリスト予想: 618.40 円\u003cbr\u003e1ヶ月上昇率: +32.25%　順位: 16 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eヒロセ電\u003c\u002fb\u003e（6806）\u003cbr\u003e現在株価: 28,225 円\u003cbr\u003eEPS成長率 2027vs2026: +10.3%\u003cbr\u003eEPS_2025: 976.32 円　EPS_2026: 991.91 円\u003cbr\u003eEPS_2027会社予想: 1039.10 円\u003cbr\u003eEPS_2027アナリスト予想: 1093.60 円\u003cbr\u003e1ヶ月上昇率: +29.71%　順位: 18 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e住友電気工業\u003c\u002fb\u003e（5802）\u003cbr\u003e現在株価: 12,585 円\u003cbr\u003eEPS成長率 2027vs2026: -9.9%\u003cbr\u003eEPS_2025: 248.47 円　EPS_2026: 473.78 円\u003cbr\u003eEPS_2027会社予想: 410.30 円\u003cbr\u003eEPS_2027アナリスト予想: 427.10 円\u003cbr\u003e1ヶ月上昇率: +23.50%　順位: 22 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e富士電機\u003c\u002fb\u003e（6504）\u003cbr\u003e現在株価: 15,440 円\u003cbr\u003eEPS成長率 2027vs2026: +6.7%\u003cbr\u003eEPS_2025: 642.69 円　EPS_2026: 665.17 円\u003cbr\u003eEPS_2027会社予想: 712.40 円\u003cbr\u003eEPS_2027アナリスト予想: 709.90 円\u003cbr\u003e1ヶ月上昇率: +22.06%　順位: 24 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e古河電気工業\u003c\u002fb\u003e（5801）\u003cbr\u003e現在株価: 52,060 円\u003cbr\u003eEPS成長率 2027vs2026: +7.3%\u003cbr\u003eEPS_2025: 473.48 円　EPS_2026: 1030.16 円\u003cbr\u003eEPS_2027会社予想: 1165.60 円\u003cbr\u003eEPS_2027アナリスト予想: 1104.90 円\u003cbr\u003e1ヶ月上昇率: +21.35%　順位: 27 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e東京エレクトロン\u003c\u002fb\u003e（8035）\u003cbr\u003e現在株価: 52,420 円\u003cbr\u003eEPS成長率 2027vs2026: +30.9%\u003cbr\u003eEPS_2025: 1182.40 円　EPS_2026: 1254.57 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 1642.80 円\u003cbr\u003e1ヶ月上昇率: +16.10%　順位: 30 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e日本マイクロニクス\u003c\u002fb\u003e（6871）\u003cbr\u003e現在株価: 14,740 円\u003cbr\u003eEPS成長率 2027vs2026: +87.4%\u003cbr\u003eEPS_2025: 311.51 円　EPS_2026: 311.51 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 583.90 円\u003cbr\u003e1ヶ月上昇率: +12.61%　順位: 32 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e東京精密\u003c\u002fb\u003e（7729）\u003cbr\u003e現在株価: 17,385 円\u003cbr\u003eEPS成長率 2027vs2026: +19.5%\u003cbr\u003eEPS_2025: 633.74 円　EPS_2026: 610.02 円\u003cbr\u003eEPS_2027会社予想: 689.90 円\u003cbr\u003eEPS_2027アナリスト予想: 729.00 円\u003cbr\u003e1ヶ月上昇率: +0.17%　順位: 51 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eSWCC\u003c\u002fb\u003e（5805）\u003cbr\u003e現在株価: 14,840 円\u003cbr\u003eEPS成長率 2027vs2026: +12.2%\u003cbr\u003eEPS_2025: 385.69 円　EPS_2026: 636.44 円\u003cbr\u003eEPS_2027会社予想: 624.70 円\u003cbr\u003eEPS_2027アナリスト予想: 714.40 円\u003cbr\u003e1ヶ月上昇率: -4.81%　順位: 56 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eHOYA\u003c\u002fb\u003e（7741）\u003cbr\u003e現在株価: 27,080 円\u003cbr\u003eEPS成長率 2027vs2026: +8.9%\u003cbr\u003eEPS_2025: 580.44 円　EPS_2026: 743.93 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 809.80 円\u003cbr\u003e1ヶ月上昇率: -7.59%　順位: 61 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003e精工技研\u003c\u002fb\u003e（6834）\u003cbr\u003e現在株価: 26,960 円\u003cbr\u003eEPS成長率 2027vs2026: +32.6%\u003cbr\u003eEPS_2025: 245.34 円　EPS_2026: 695.58 円\u003cbr\u003eEPS_2027会社予想: 715.90 円\u003cbr\u003eEPS_2027アナリスト予想: 922.10 円\u003cbr\u003e1ヶ月上昇率: -8.33%　順位: 63 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eレーザーテック\u003c\u002fb\u003e（6920）\u003cbr\u003e現在株価: 40,130 円\u003cbr\u003eEPS成長率 2027vs2026: +13.3%\u003cbr\u003eEPS_2025: 938.60 円　EPS_2026: 938.60 円\u003cbr\u003eEPS_2027会社予想: 801.40 円\u003cbr\u003eEPS_2027アナリスト予想: 1063.10 円\u003cbr\u003e1ヶ月上昇率: -9.47%　順位: 65 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eアドバンテスト\u003c\u002fb\u003e（6857）\u003cbr\u003e現在株価: 26,170 円\u003cbr\u003eEPS成長率 2027vs2026: +37.0%\u003cbr\u003eEPS_2025: 218.67 円　EPS_2026: 515.15 円\u003cbr\u003eEPS_2027会社予想: 641.60 円\u003cbr\u003eEPS_2027アナリスト予想: 705.80 円\u003cbr\u003e1ヶ月上昇率: -12.03%　順位: 66 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003esantec\u003c\u002fb\u003e（6777）\u003cbr\u003e現在株価: 24,980 円\u003cbr\u003eEPS成長率 2027vs2026: -0.7%\u003cbr\u003eEPS_2025: 430.92 円　EPS_2026: 651.95 円\u003cbr\u003eEPS_2027会社予想: 748.30 円\u003cbr\u003eEPS_2027アナリスト予想: 647.70 円\u003cbr\u003e1ヶ月上昇率: -12.60%　順位: 67 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29","\u003cb\u003eディスコ\u003c\u002fb\u003e（6146）\u003cbr\u003e現在株価: 65,090 円\u003cbr\u003eEPS成長率 2027vs2026: +33.2%\u003cbr\u003eEPS_2025: 1143.26 円　EPS_2026: 1249.83 円\u003cbr\u003eEPS_2027会社予想: N\u002fA 円\u003cbr\u003eEPS_2027アナリスト予想: 1664.80 円\u003cbr\u003e1ヶ月上昇率: -14.85%　順位: 69 位\u003cbr\u003e期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29"],"hovertemplate":"%{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#C77DFF","line":{"color":"rgba(255,255,255,0.3)","width":0.8},"opacity":0.85,"size":10},"mode":"markers+text","name":"12,001円〜","text":["太陽誘電\u003cbr\u003e6976  14,815円","キオクシアホールディングス\u003cbr\u003e285A  65,850円","レゾナックHD\u003cbr\u003e4004  18,720円","ヒロセ電\u003cbr\u003e6806  28,225円","住友電気工業\u003cbr\u003e5802  12,585円","富士電機\u003cbr\u003e6504  15,440円","古河電気工業\u003cbr\u003e5801  52,060円","東京エレクトロン\u003cbr\u003e8035  52,420円","日本マイクロニクス\u003cbr\u003e6871  14,740円","東京精密\u003cbr\u003e7729  17,385円","SWCC\u003cbr\u003e5805  14,840円","HOYA\u003cbr\u003e7741  27,080円","精工技研\u003cbr\u003e6834  26,960円","レーザーテック\u003cbr\u003e6920  40,130円","アドバンテスト\u003cbr\u003e6857  26,170円","santec\u003cbr\u003e6777  24,980円","ディスコ\u003cbr\u003e6146  65,090円"],"textfont":{"color":"#C77DFF","size":10},"textposition":"top center","x":[83.7,695.2,285.3,10.3,-9.9,6.7,7.3,30.9,87.4,19.5,12.2,8.9,32.6,13.3,37.0,-0.7,33.2],"y":[124.95,81.31,32.25,29.71,23.5,22.06,21.35,16.1,12.61,0.17,-4.81,-7.59,-8.33,-9.47,-12.03,-12.6,-14.85],"type":"scatter"}],"layout":{"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"shapes":[{"line":{"color":"rgba(200,200,200,0.4)","dash":"dot","width":1},"type":"line","x0":0,"x1":0,"xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"rgba(200,200,200,0.4)","dash":"dot","width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":0,"y1":0,"yref":"y"}],"annotations":[{"font":{"color":"#777","size":10},"showarrow":false,"text":" 月次上昇率 0%","x":1,"xanchor":"left","xref":"x domain","y":0,"yanchor":"middle","yref":"y"},{"font":{"color":"#556","size":10},"showarrow":false,"text":"EPS増益・株価上昇","x":655.6850000000001,"xref":"x","y":114.95400000000001,"yref":"y"},{"font":{"color":"#556","size":10},"showarrow":false,"text":"EPS減益・株価上昇","x":-55.58499999999999,"xref":"x","y":114.95400000000001,"yref":"y"},{"font":{"color":"#556","size":10},"showarrow":false,"text":"EPS増益・株価下落","x":655.6850000000001,"xref":"x","y":-26.5788,"yref":"y"},{"font":{"color":"#556","size":10},"showarrow":false,"text":"EPS減益・株価下落","x":-55.58499999999999,"xref":"x","y":-26.5788,"yref":"y"}],"title":{"font":{"size":16,"color":"#d1d4dc"},"text":"AI半導体_光電融合_統合 — EPS成長率(2027vs2026) × 1ヶ月株価上昇率\u003cbr\u003e\u003csup\u003e横軸: EPS上昇率（2027アナリスト予想÷2026実績、%）\u003c\u002fsup\u003e\u003cbr\u003e\u003csup\u003e縦軸: 1ヶ月株価上昇率　期間: 2026\u002f04\u002f28 → 2026\u002f05\u002f29\u003c\u002fsup\u003e\u003cbr\u003e\u003csup\u003e色: 現在株価クラス　　点をホバーで詳細表示\u003c\u002fsup\u003e","x":0.01},"font":{"family":"'Segoe UI', sans-serif","color":"#d1d4dc","size":12},"xaxis":{"title":{"text":"EPS成長率 2027vs2026（%）"},"gridcolor":"#242836","linecolor":"#2a2e39","zerolinecolor":"#555","ticksuffix":"%"},"yaxis":{"title":{"text":"1ヶ月株価上昇率 (%)"},"gridcolor":"#242836","linecolor":"#2a2e39","zerolinecolor":"#555","ticksuffix":"%"},"margin":{"t":135,"l":80,"r":20,"b":75},"paper_bgcolor":"#131722","plot_bgcolor":"#1e222d","hovermode":"closest","showlegend":false}};
+const BANDS      = [{"traceIdx": 0, "label": "〜3,000円", "color": "#FF6B6B", "count": 9}, {"traceIdx": 1, "label": "3,001〜6,000円", "color": "#FFD93D", "count": 27}, {"traceIdx": 2, "label": "6,001〜9,000円", "color": "#6BCB77", "count": 8}, {"traceIdx": 3, "label": "9,001〜12,000円", "color": "#4D96FF", "count": 5}, {"traceIdx": 4, "label": "12,001円〜", "color": "#C77DFF", "count": 17}];
+const BAND_CODES = [["6613", "6965", "6526", "4272", "7731", "4180", "9432", "7912", "4425"], ["3436", "4980", "6963", "6723", "6762", "5232", "4043", "6971", "6254", "3132", "6754", "4369", "4401", "6524", "6758", "8154", "6361", "6315", "4626", "6501", "6323", "7911", "3993", "6701", "6702", "5016", "5803"], ["9984", "5333", "4203", "6525", "4021", "4063", "6503", "6941"], ["6981", "4186", "7735", "6707", "6728"], ["6976", "285A", "4004", "6806", "5802", "6504", "5801", "8035", "6871", "7729", "5805", "7741", "6834", "6920", "6857", "6777", "6146"]];  // active_bands と同順のコード配列
+
+const { createApp, ref, computed, onMounted } = Vue;
+
+createApp({
+  setup() {
+    const selectedBand    = ref(null);
+    const isLoading       = ref(true);
+    const loadingProgress = ref('');
+    const activeBands     = BANDS;
+    const totalCount      = activeBands.reduce((s, b) => s + b.count, 0);
+
+    let initXRange = null;
+    let initYRange = null;
+
+    // ── クラス切り替え ───────────────────────────────
+    function applyBand(bandIdx) {
+      const div = document.getElementById('plotly-chart');
+      if (!div || !window.Plotly) return;
+
+      const vis = FIGURE.data.map((_, i) =>
+        bandIdx === null
+          ? true
+          : (activeBands[bandIdx] && activeBands[bandIdx].traceIdx === i)
+      );
+      Plotly.restyle(div, { visible: vis });
+    }
+
+    function selectBand(idx) {
+      selectedBand.value = idx;
+      applyBand(idx);
+    }
+
+    // ── 移動（現在の範囲幅の 20% ずつシフト） ───────────
+    function pan(dx, dy) {
+      const div = document.getElementById('plotly-chart');
+      if (!div || !window.Plotly || !div.layout) return;
+      const xr = (div.layout.xaxis && div.layout.xaxis.range) || initXRange;
+      const yr = (div.layout.yaxis && div.layout.yaxis.range) || initYRange;
+      if (!xr || !yr) return;
+      const xs = (xr[1] - xr[0]) * 0.2 * dx;
+      const ys = (yr[1] - yr[0]) * 0.2 * dy;
+      Plotly.relayout(div, {
+        'xaxis.range': [xr[0] + xs, xr[1] + xs],
+        'yaxis.range': [yr[0] + ys, yr[1] + ys],
+      });
+    }
+
+    // ── ズーム（[0,0] 原点固定でスケール） ──────────────
+    function zoom(factor) {
+      const div = document.getElementById('plotly-chart');
+      if (!div || !window.Plotly || !div.layout) return;
+      const xr = (div.layout.xaxis && div.layout.xaxis.range) || initXRange;
+      const yr = (div.layout.yaxis && div.layout.yaxis.range) || initYRange;
+      if (!xr || !yr) return;
+      // [0,0] を中心に各端を factor 倍することで原点を固定したまま拡縮
+      Plotly.relayout(div, {
+        'xaxis.range': [xr[0] * factor, xr[1] * factor],
+        'yaxis.range': [yr[0] * factor, yr[1] * factor],
+      });
+    }
+
+    function resetZoom() {
+      const div = document.getElementById('plotly-chart');
+      if (!div || !window.Plotly) return;
+      if (initXRange && initYRange) {
+        Plotly.relayout(div, {
+          'xaxis.range': [...initXRange],
+          'yaxis.range': [...initYRange],
+        });
+      } else {
+        Plotly.relayout(div, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+      }
+    }
+
+    // ── リアルタイム株価取得 ─────────────────────────
+    async function fetchRealPrices() {
+      const allCodes = BAND_CODES.flat();
+      loadingProgress.value = `${allCodes.length} 銘柄を照会中...`;
+      try {
+        const resp = await fetch(
+          '/api/prices?codes=' + allCodes.join(','),
+          { signal: AbortSignal.timeout(20000) }
+        );
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const priceMap = await resp.json();
+
+        const acquired = Object.keys(priceMap).length;
+        loadingProgress.value = `${acquired} / ${allCodes.length} 件取得完了`;
+
+        // 各トレースのテキストを実株価で上書き
+        const plotDiv = document.getElementById('plotly-chart');
+        if (plotDiv && window.Plotly) {
+          for (let ti = 0; ti < BAND_CODES.length; ti++) {
+            const codes   = BAND_CODES[ti];
+            const trace   = plotDiv.data[ti];
+            if (!trace || !trace.text) continue;
+            const newText = codes.map((code, j) => {
+              const p = priceMap[code];
+              const name = (trace.text[j] || '').split('<br>')[0];
+              return p != null
+                ? name + '<br>' + code + '  ' + p.toLocaleString('ja-JP') + '円'
+                : trace.text[j];
+            });
+            Plotly.restyle(plotDiv, { text: [newText] }, [ti]);
+          }
+        }
+      } catch (e) {
+        loadingProgress.value = '取得失敗（生成時の価格を使用）';
+        console.warn('株価取得エラー:', e.message);
+        await new Promise(r => setTimeout(r, 1200));
+      } finally {
+        isLoading.value = false;
+      }
+    }
+
+    // ── マウント ─────────────────────────────────────
+    onMounted(() => {
+      const div = document.getElementById('plotly-chart');
+      const layout = Object.assign({}, FIGURE.layout, {
+        showlegend: false,
+        margin: { t: 135, l: 75, r: 20, b: 65 },
+      });
+      Plotly.newPlot(div, FIGURE.data, layout, { responsive: true }).then(() => {
+        if (div.layout.xaxis && div.layout.xaxis.range) {
+          initXRange = [...div.layout.xaxis.range];
+        }
+        if (div.layout.yaxis && div.layout.yaxis.range) {
+          initYRange = [...div.layout.yaxis.range];
+        }
+        fetchRealPrices();
+      });
+    });
+
+    return {
+      selectedBand, activeBands, totalCount,
+      isLoading, loadingProgress,
+      selectBand, zoom, resetZoom, pan,
+    };
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

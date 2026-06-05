@@ -1,0 +1,193 @@
+<html style="background:#131722;color-scheme:dark;">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<script>
+/* Chrome Auto Dark Mode 対策:
+   CSS より前に color-scheme:dark を設定し、ブラウザが
+   強制反転フィルタを適用する前に「このページは既にダーク」と宣言する */
+(function(){
+  var root = document.documentElement;
+  root.style.colorScheme = 'dark';
+  root.style.background  = '#131722';
+  var pref = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
+             ? 'light' : 'dark';
+  root.setAttribute('data-theme', pref);
+})();
+</script>
+<style>
+/* ── Chrome Auto Dark Mode 対策 ──
+   color-scheme:dark を html/body だけでなく
+   Plotly の div・SVG 要素にも個別に付与する。
+   Chrome はルートへの filter 適用後、color-scheme:dark を持つ子要素を
+   "un-invert" するため、全要素に指定することで元の色が保たれる。 */
+:root, html, body { color-scheme: dark; }
+.plotly-graph-div,
+.js-plotly-plot,
+.main-svg,
+.plotly-graph-div * { color-scheme: dark; }
+
+html[data-theme="dark"], body[data-theme="dark"] { background: #131722 !important; }
+html[data-theme="light"], body[data-theme="light"] { background: #f5f6fa !important; }
+html { background: #131722 !important; }
+body { background: #131722 !important; margin: 0; }
+
+/* ── トグルスイッチ ── */
+#theme-widget {
+    position: fixed; top: 14px; right: 16px; z-index: 9999;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Segoe UI', sans-serif; font-size: 12px;
+    color: #d1d4dc; user-select: none;
+    background: rgba(19,23,34,0.85); padding: 5px 10px;
+    border-radius: 20px; border: 1px solid #363a45;
+}
+html[data-theme="light"] #theme-widget {
+    color: #333; background: rgba(245,246,250,0.92);
+    border-color: #ccc;
+}
+#theme-label-left  { opacity: 0.4; transition: opacity 0.2s; }
+#theme-label-right { opacity: 0.4; transition: opacity 0.2s; }
+html[data-theme="dark"]  #theme-label-left  { opacity: 1; }
+html[data-theme="light"] #theme-label-right { opacity: 1; }
+
+#theme-switch { position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0; }
+#theme-switch input { display: none; }
+#theme-track {
+    position: absolute; inset: 0; border-radius: 12px;
+    background: #4D96FF; transition: background 0.25s;
+}
+html[data-theme="light"] #theme-track { background: #FFD93D; }
+#theme-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    transition: transform 0.25s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; line-height: 1;
+}
+html[data-theme="light"] #theme-thumb { transform: translateX(20px); }
+</style><meta charset="utf-8" /><style id="mobile-support">
+/* チャートをビューポート全体に広げる */
+html, body { height: 100%; margin: 0; overflow: hidden; }
+.plotly-graph-div {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100% !important;
+}
+
+/* モバイル向け微調整 */
+@media (max-width: 767px) {
+    /* スクロールバーを隠してフル画面表示 */
+    body { overflow: hidden; }
+}
+</style>
+</head>
+<body style="background:#131722;margin:0;color-scheme:dark;">
+    <div>                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.5.0.min.js" integrity="sha256-fHbNLP+GlIXN+efbQec78UkemUz3NJp7UmfGxC1tNxs=" crossorigin="anonymous"></script>                <div id="a5d0f791-2a0e-4d81-8cfb-d5bfd2f89c88" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("a5d0f791-2a0e-4d81-8cfb-d5bfd2f89c88")) {                    Plotly.newPlot(                        "a5d0f791-2a0e-4d81-8cfb-d5bfd2f89c88",                        [{"customdata":["\u003cb\u003eフジクラ\u003c\u002fb\u003e（5803）\u003cbr\u003eHV: 140.68%\u003cbr\u003e21日間上昇率: -20.97%\u003cbr\u003eHV順位: 1 位","\u003cb\u003eソフトバンクグループ\u003c\u002fb\u003e（9984）\u003cbr\u003eHV: 123.45%\u003cbr\u003e21日間上昇率: +25.62%\u003cbr\u003eHV順位: 2 位","\u003cb\u003eルネサスエレクトロニクス\u003c\u002fb\u003e（6723）\u003cbr\u003eHV: 90.43%\u003cbr\u003e21日間上昇率: +43.27%\u003cbr\u003eHV順位: 3 位","\u003cb\u003e住友電気工業\u003c\u002fb\u003e（5802）\u003cbr\u003eHV: 85.59%\u003cbr\u003e21日間上昇率: +25.66%\u003cbr\u003eHV順位: 4 位","\u003cb\u003eオリンパス\u003c\u002fb\u003e（7733）\u003cbr\u003eHV: 76.52%\u003cbr\u003e21日間上昇率: +16.88%\u003cbr\u003eHV順位: 5 位","\u003cb\u003e中外製薬\u003c\u002fb\u003e（4519）\u003cbr\u003eHV: 74.94%\u003cbr\u003e21日間上昇率: -10.77%\u003cbr\u003eHV順位: 6 位","\u003cb\u003eファナック\u003c\u002fb\u003e（6954）\u003cbr\u003eHV: 73.14%\u003cbr\u003e21日間上昇率: +26.15%\u003cbr\u003eHV順位: 7 位","\u003cb\u003eキーエンス\u003c\u002fb\u003e（6861）\u003cbr\u003eHV: 73.13%\u003cbr\u003e21日間上昇率: +26.80%\u003cbr\u003eHV順位: 8 位","\u003cb\u003e村田製作所\u003c\u002fb\u003e（6981）\u003cbr\u003eHV: 72.68%\u003cbr\u003e21日間上昇率: +95.00%\u003cbr\u003eHV順位: 9 位","\u003cb\u003eＳＭＣ\u003c\u002fb\u003e（6273）\u003cbr\u003eHV: 72.48%\u003cbr\u003e21日間上昇率: -1.93%\u003cbr\u003eHV順位: 10 位","\u003cb\u003e住友商事\u003c\u002fb\u003e（8053）\u003cbr\u003eHV: 68.34%\u003cbr\u003e21日間上昇率: +22.80%\u003cbr\u003eHV順位: 11 位","\u003cb\u003e富士通\u003c\u002fb\u003e（6702）\u003cbr\u003eHV: 68.25%\u003cbr\u003e21日間上昇率: -8.87%\u003cbr\u003eHV順位: 12 位","\u003cb\u003e野村総合研究所\u003c\u002fb\u003e（4307）\u003cbr\u003eHV: 68.15%\u003cbr\u003e21日間上昇率: -1.37%\u003cbr\u003eHV順位: 13 位","\u003cb\u003eレーザーテック\u003c\u002fb\u003e（6920）\u003cbr\u003eHV: 66.39%\u003cbr\u003e21日間上昇率: -10.94%\u003cbr\u003eHV順位: 14 位","\u003cb\u003eアドバンテスト\u003c\u002fb\u003e（6857）\u003cbr\u003eHV: 64.88%\u003cbr\u003e21日間上昇率: -11.11%\u003cbr\u003eHV順位: 15 位","\u003cb\u003eＴＤＫ\u003c\u002fb\u003e（6762）\u003cbr\u003eHV: 64.46%\u003cbr\u003e21日間上昇率: +52.71%\u003cbr\u003eHV順位: 16 位","\u003cb\u003eテルモ\u003c\u002fb\u003e（4543）\u003cbr\u003eHV: 63.97%\u003cbr\u003e21日間上昇率: +16.78%\u003cbr\u003eHV順位: 17 位","\u003cb\u003eリクルートホールディングス\u003c\u002fb\u003e（6098）\u003cbr\u003eHV: 62.40%\u003cbr\u003e21日間上昇率: +44.64%\u003cbr\u003eHV順位: 18 位","\u003cb\u003eディスコ\u003c\u002fb\u003e（6146）\u003cbr\u003eHV: 59.50%\u003cbr\u003e21日間上昇率: -9.22%\u003cbr\u003eHV順位: 19 位","\u003cb\u003e豊田通商\u003c\u002fb\u003e（8015）\u003cbr\u003eHV: 57.07%\u003cbr\u003e21日間上昇率: +13.16%\u003cbr\u003eHV順位: 20 位","\u003cb\u003e東京エレクトロン\u003c\u002fb\u003e（8035）\u003cbr\u003eHV: 54.71%\u003cbr\u003e21日間上昇率: +14.33%\u003cbr\u003eHV順位: 21 位","\u003cb\u003e住友不動産\u003c\u002fb\u003e（8830）\u003cbr\u003eHV: 54.70%\u003cbr\u003e21日間上昇率: -20.61%\u003cbr\u003eHV順位: 22 位","\u003cb\u003eＳＯＭＰＯホールディングス\u003c\u002fb\u003e（8630）\u003cbr\u003eHV: 53.28%\u003cbr\u003e21日間上昇率: +2.07%\u003cbr\u003eHV順位: 23 位","\u003cb\u003e味の素\u003c\u002fb\u003e（2802）\u003cbr\u003eHV: 51.56%\u003cbr\u003e21日間上昇率: +8.28%\u003cbr\u003eHV順位: 24 位","\u003cb\u003eダイキン工業\u003c\u002fb\u003e（6367）\u003cbr\u003eHV: 51.53%\u003cbr\u003e21日間上昇率: +7.98%\u003cbr\u003eHV順位: 25 位","\u003cb\u003eオリックス\u003c\u002fb\u003e（8591）\u003cbr\u003eHV: 50.22%\u003cbr\u003e21日間上昇率: +28.70%\u003cbr\u003eHV順位: 26 位","\u003cb\u003eソニーグループ\u003c\u002fb\u003e（6758）\u003cbr\u003eHV: 49.99%\u003cbr\u003e21日間上昇率: +7.36%\u003cbr\u003eHV順位: 27 位","\u003cb\u003eパナソニック ホールディングス\u003c\u002fb\u003e（6752）\u003cbr\u003eHV: 49.25%\u003cbr\u003e21日間上昇率: +28.52%\u003cbr\u003eHV順位: 28 位","\u003cb\u003e信越化学工業\u003c\u002fb\u003e（4063）\u003cbr\u003eHV: 49.07%\u003cbr\u003e21日間上昇率: +14.63%\u003cbr\u003eHV順位: 29 位","\u003cb\u003e任天堂\u003c\u002fb\u003e（7974）\u003cbr\u003eHV: 48.58%\u003cbr\u003e21日間上昇率: -10.12%\u003cbr\u003eHV順位: 30 位","\u003cb\u003eＬＩＮＥヤフー\u003c\u002fb\u003e（4689）\u003cbr\u003eHV: 46.73%\u003cbr\u003e21日間上昇率: +0.24%\u003cbr\u003eHV順位: 31 位","\u003cb\u003eりそなホールディングス\u003c\u002fb\u003e（8308）\u003cbr\u003eHV: 46.69%\u003cbr\u003e21日間上昇率: +12.09%\u003cbr\u003eHV順位: 32 位","\u003cb\u003eオリエンタルランド\u003c\u002fb\u003e（4661）\u003cbr\u003eHV: 46.58%\u003cbr\u003e21日間上昇率: -4.33%\u003cbr\u003eHV順位: 33 位","\u003cb\u003e三菱商事\u003c\u002fb\u003e（8058）\u003cbr\u003eHV: 46.51%\u003cbr\u003e21日間上昇率: +2.32%\u003cbr\u003eHV順位: 34 位","\u003cb\u003e日本電気\u003c\u002fb\u003e（6701）\u003cbr\u003eHV: 45.54%\u003cbr\u003e21日間上昇率: -9.08%\u003cbr\u003eHV順位: 35 位","\u003cb\u003e三菱ケミカルグループ\u003c\u002fb\u003e（4188）\u003cbr\u003eHV: 45.30%\u003cbr\u003e21日間上昇率: +25.91%\u003cbr\u003eHV順位: 36 位","\u003cb\u003eみずほフィナンシャルグループ\u003c\u002fb\u003e（8411）\u003cbr\u003eHV: 45.29%\u003cbr\u003e21日間上昇率: +11.95%\u003cbr\u003eHV順位: 37 位","\u003cb\u003eアシックス\u003c\u002fb\u003e（7936）\u003cbr\u003eHV: 45.14%\u003cbr\u003e21日間上昇率: +9.72%\u003cbr\u003eHV順位: 38 位","\u003cb\u003e三菱電機\u003c\u002fb\u003e（6503）\u003cbr\u003eHV: 45.09%\u003cbr\u003e21日間上昇率: +9.32%\u003cbr\u003eHV順位: 39 位","\u003cb\u003e三井不動産\u003c\u002fb\u003e（8801）\u003cbr\u003eHV: 44.35%\u003cbr\u003e21日間上昇率: -10.21%\u003cbr\u003eHV順位: 40 位","\u003cb\u003eＳＵＢＡＲＵ\u003c\u002fb\u003e（7270）\u003cbr\u003eHV: 43.81%\u003cbr\u003e21日間上昇率: -0.25%\u003cbr\u003eHV順位: 41 位","\u003cb\u003eスズキ\u003c\u002fb\u003e（7269）\u003cbr\u003eHV: 43.76%\u003cbr\u003e21日間上昇率: +11.15%\u003cbr\u003eHV順位: 42 位","\u003cb\u003eゆうちょ銀行\u003c\u002fb\u003e（7182）\u003cbr\u003eHV: 43.07%\u003cbr\u003e21日間上昇率: +22.27%\u003cbr\u003eHV順位: 43 位","\u003cb\u003e日本取引所グループ\u003c\u002fb\u003e（8697）\u003cbr\u003eHV: 42.04%\u003cbr\u003e21日間上昇率: +6.26%\u003cbr\u003eHV順位: 44 位","\u003cb\u003eアステラス製薬\u003c\u002fb\u003e（4503）\u003cbr\u003eHV: 41.51%\u003cbr\u003e21日間上昇率: -7.50%\u003cbr\u003eHV順位: 45 位","\u003cb\u003e東日本旅客鉄道\u003c\u002fb\u003e（9020）\u003cbr\u003eHV: 41.50%\u003cbr\u003e21日間上昇率: -1.42%\u003cbr\u003eHV順位: 46 位","\u003cb\u003e本田技研工業\u003c\u002fb\u003e（7267）\u003cbr\u003eHV: 41.18%\u003cbr\u003e21日間上昇率: +12.04%\u003cbr\u003eHV順位: 47 位","\u003cb\u003e日立製作所\u003c\u002fb\u003e（6501）\u003cbr\u003eHV: 40.89%\u003cbr\u003e21日間上昇率: -1.20%\u003cbr\u003eHV順位: 48 位","\u003cb\u003eクボタ\u003c\u002fb\u003e（6326）\u003cbr\u003eHV: 40.13%\u003cbr\u003e21日間上昇率: +11.06%\u003cbr\u003eHV順位: 49 位","\u003cb\u003eイオン\u003c\u002fb\u003e（8267）\u003cbr\u003eHV: 39.81%\u003cbr\u003e21日間上昇率: -9.61%\u003cbr\u003eHV順位: 50 位","\u003cb\u003eバンダイナムコホールディングス\u003c\u002fb\u003e（7832）\u003cbr\u003eHV: 38.97%\u003cbr\u003e21日間上昇率: -2.75%\u003cbr\u003eHV順位: 51 位","\u003cb\u003e野村ホールディングス\u003c\u002fb\u003e（8604）\u003cbr\u003eHV: 38.30%\u003cbr\u003e21日間上昇率: -2.06%\u003cbr\u003eHV順位: 52 位","\u003cb\u003e丸紅\u003c\u002fb\u003e（8002）\u003cbr\u003eHV: 38.00%\u003cbr\u003e21日間上昇率: -12.47%\u003cbr\u003eHV順位: 53 位","\u003cb\u003e旭化成\u003c\u002fb\u003e（3407）\u003cbr\u003eHV: 37.00%\u003cbr\u003e21日間上昇率: +17.03%\u003cbr\u003eHV順位: 54 位","\u003cb\u003eファーストリテイリング\u003c\u002fb\u003e（9983）\u003cbr\u003eHV: 36.83%\u003cbr\u003e21日間上昇率: +17.46%\u003cbr\u003eHV順位: 55 位","\u003cb\u003e富士フイルムホールディングス\u003c\u002fb\u003e（4901）\u003cbr\u003eHV: 36.78%\u003cbr\u003e21日間上昇率: +14.71%\u003cbr\u003eHV順位: 56 位","\u003cb\u003eセコム\u003c\u002fb\u003e（9735）\u003cbr\u003eHV: 36.43%\u003cbr\u003e21日間上昇率: +11.99%\u003cbr\u003eHV順位: 57 位","\u003cb\u003e三井住友トラスト・ホールディングス\u003c\u002fb\u003e（8309）\u003cbr\u003eHV: 36.14%\u003cbr\u003e21日間上昇率: +6.91%\u003cbr\u003eHV順位: 58 位","\u003cb\u003e東海旅客鉄道\u003c\u002fb\u003e（9022）\u003cbr\u003eHV: 34.83%\u003cbr\u003e21日間上昇率: -15.35%\u003cbr\u003eHV順位: 59 位","\u003cb\u003e京セラ\u003c\u002fb\u003e（6971）\u003cbr\u003eHV: 33.92%\u003cbr\u003e21日間上昇率: +28.52%\u003cbr\u003eHV順位: 60 位","\u003cb\u003e第一生命ホールディングス\u003c\u002fb\u003e（8750）\u003cbr\u003eHV: 33.85%\u003cbr\u003e21日間上昇率: +16.03%\u003cbr\u003eHV順位: 61 位","\u003cb\u003eＥＮＥＯＳホールディングス\u003c\u002fb\u003e（5020）\u003cbr\u003eHV: 33.57%\u003cbr\u003e21日間上昇率: +0.46%\u003cbr\u003eHV順位: 62 位","\u003cb\u003e三井物産\u003c\u002fb\u003e（8031）\u003cbr\u003eHV: 33.46%\u003cbr\u003e21日間上昇率: -8.54%\u003cbr\u003eHV順位: 63 位","\u003cb\u003e日産自動車\u003c\u002fb\u003e（7201）\u003cbr\u003eHV: 33.13%\u003cbr\u003e21日間上昇率: +12.46%\u003cbr\u003eHV順位: 64 位","\u003cb\u003e大塚ホールディングス\u003c\u002fb\u003e（4578）\u003cbr\u003eHV: 33.04%\u003cbr\u003e21日間上昇率: +8.37%\u003cbr\u003eHV順位: 65 位","\u003cb\u003e第一三共\u003c\u002fb\u003e（4568）\u003cbr\u003eHV: 32.70%\u003cbr\u003e21日間上昇率: +8.04%\u003cbr\u003eHV順位: 66 位","\u003cb\u003e三井住友フィナンシャルグループ\u003c\u002fb\u003e（8316）\u003cbr\u003eHV: 32.63%\u003cbr\u003e21日間上昇率: +8.83%\u003cbr\u003eHV順位: 67 位","\u003cb\u003e塩野義製薬\u003c\u002fb\u003e（4507）\u003cbr\u003eHV: 32.07%\u003cbr\u003e21日間上昇率: -3.54%\u003cbr\u003eHV順位: 68 位","\u003cb\u003e東京海上ホールディングス\u003c\u002fb\u003e（8766）\u003cbr\u003eHV: 31.82%\u003cbr\u003e21日間上昇率: -0.91%\u003cbr\u003eHV順位: 69 位","\u003cb\u003e三菱地所\u003c\u002fb\u003e（8802）\u003cbr\u003eHV: 31.36%\u003cbr\u003e21日間上昇率: -9.28%\u003cbr\u003eHV順位: 70 位","\u003cb\u003e日本たばこ産業\u003c\u002fb\u003e（2914）\u003cbr\u003eHV: 31.05%\u003cbr\u003e21日間上昇率: +5.80%\u003cbr\u003eHV順位: 71 位","\u003cb\u003eＡＮＡホールディングス\u003c\u002fb\u003e（9202）\u003cbr\u003eHV: 30.85%\u003cbr\u003e21日間上昇率: +10.79%\u003cbr\u003eHV順位: 72 位","\u003cb\u003eＭＳ＆ＡＤインシュアランスグループホールディングス\u003c\u002fb\u003e（8725）\u003cbr\u003eHV: 30.79%\u003cbr\u003e21日間上昇率: +8.64%\u003cbr\u003eHV順位: 73 位","\u003cb\u003e三菱重工業\u003c\u002fb\u003e（7011）\u003cbr\u003eHV: 30.62%\u003cbr\u003e21日間上昇率: -19.67%\u003cbr\u003eHV順位: 74 位","\u003cb\u003eデンソー\u003c\u002fb\u003e（6902）\u003cbr\u003eHV: 30.27%\u003cbr\u003e21日間上昇率: +2.14%\u003cbr\u003eHV順位: 75 位","\u003cb\u003eユニ・チャーム\u003c\u002fb\u003e（8113）\u003cbr\u003eHV: 29.83%\u003cbr\u003e21日間上昇率: -0.42%\u003cbr\u003eHV順位: 76 位","\u003cb\u003eシマノ\u003c\u002fb\u003e（7309）\u003cbr\u003eHV: 29.69%\u003cbr\u003e21日間上昇率: -0.69%\u003cbr\u003eHV順位: 77 位","\u003cb\u003eＫＤＤＩ\u003c\u002fb\u003e（9433）\u003cbr\u003eHV: 29.25%\u003cbr\u003e21日間上昇率: +6.74%\u003cbr\u003eHV順位: 78 位","\u003cb\u003e小松製作所\u003c\u002fb\u003e（6301）\u003cbr\u003eHV: 29.14%\u003cbr\u003e21日間上昇率: -4.78%\u003cbr\u003eHV順位: 79 位","\u003cb\u003eＨＯＹＡ\u003c\u002fb\u003e（7741）\u003cbr\u003eHV: 28.68%\u003cbr\u003e21日間上昇率: -5.28%\u003cbr\u003eHV順位: 80 位","\u003cb\u003eトヨタ自動車\u003c\u002fb\u003e（7203）\u003cbr\u003eHV: 28.67%\u003cbr\u003e21日間上昇率: -0.82%\u003cbr\u003eHV順位: 81 位","\u003cb\u003e三菱ＵＦＪフィナンシャル・グループ\u003c\u002fb\u003e（8306）\u003cbr\u003eHV: 28.58%\u003cbr\u003e21日間上昇率: +8.82%\u003cbr\u003eHV順位: 82 位","\u003cb\u003eキリンホールディングス\u003c\u002fb\u003e（2503）\u003cbr\u003eHV: 28.50%\u003cbr\u003e21日間上昇率: +8.46%\u003cbr\u003eHV順位: 83 位","\u003cb\u003eソニーフィナンシャルグループ\u003c\u002fb\u003e（8729）\u003cbr\u003eHV: 28.08%\u003cbr\u003e21日間上昇率: +6.06%\u003cbr\u003eHV順位: 84 位","\u003cb\u003e日本郵船\u003c\u002fb\u003e（9101）\u003cbr\u003eHV: 27.81%\u003cbr\u003e21日間上昇率: -9.55%\u003cbr\u003eHV順位: 85 位","\u003cb\u003e日本郵政\u003c\u002fb\u003e（6178）\u003cbr\u003eHV: 27.02%\u003cbr\u003e21日間上昇率: +16.18%\u003cbr\u003eHV順位: 86 位","\u003cb\u003e商船三井\u003c\u002fb\u003e（9104）\u003cbr\u003eHV: 26.24%\u003cbr\u003e21日間上昇率: -10.55%\u003cbr\u003eHV順位: 87 位","\u003cb\u003e伊藤忠商事\u003c\u002fb\u003e（8001）\u003cbr\u003eHV: 25.94%\u003cbr\u003e21日間上昇率: -0.21%\u003cbr\u003eHV順位: 88 位","\u003cb\u003eセブン＆アイ・ホールディングス\u003c\u002fb\u003e（3382）\u003cbr\u003eHV: 25.75%\u003cbr\u003e21日間上昇率: -2.77%\u003cbr\u003eHV順位: 89 位","\u003cb\u003e西日本旅客鉄道\u003c\u002fb\u003e（9021）\u003cbr\u003eHV: 24.13%\u003cbr\u003e21日間上昇率: -11.40%\u003cbr\u003eHV順位: 90 位","\u003cb\u003eアサヒグループホールディングス\u003c\u002fb\u003e（2502）\u003cbr\u003eHV: 22.67%\u003cbr\u003e21日間上昇率: -2.18%\u003cbr\u003eHV順位: 91 位","\u003cb\u003e大和ハウス工業\u003c\u002fb\u003e（1925）\u003cbr\u003eHV: 22.41%\u003cbr\u003e21日間上昇率: -9.39%\u003cbr\u003eHV順位: 92 位","\u003cb\u003eブリヂストン\u003c\u002fb\u003e（5108）\u003cbr\u003eHV: 21.38%\u003cbr\u003e21日間上昇率: +4.81%\u003cbr\u003eHV順位: 93 位","\u003cb\u003e花王\u003c\u002fb\u003e（4452）\u003cbr\u003eHV: 20.46%\u003cbr\u003e21日間上昇率: +3.63%\u003cbr\u003eHV順位: 94 位","\u003cb\u003eキヤノン\u003c\u002fb\u003e（7751）\u003cbr\u003eHV: 19.54%\u003cbr\u003e21日間上昇率: +5.07%\u003cbr\u003eHV順位: 95 位","\u003cb\u003e日本製鉄\u003c\u002fb\u003e（5401）\u003cbr\u003eHV: 18.38%\u003cbr\u003e21日間上昇率: -1.05%\u003cbr\u003eHV順位: 96 位","\u003cb\u003eソフトバンク\u003c\u002fb\u003e（9434）\u003cbr\u003eHV: 18.18%\u003cbr\u003e21日間上昇率: -2.27%\u003cbr\u003eHV順位: 97 位","\u003cb\u003e積水ハウス\u003c\u002fb\u003e（1928）\u003cbr\u003eHV: 17.67%\u003cbr\u003e21日間上昇率: -1.03%\u003cbr\u003eHV順位: 98 位","\u003cb\u003e武田薬品工業\u003c\u002fb\u003e（4502）\u003cbr\u003eHV: 16.32%\u003cbr\u003e21日間上昇率: -4.07%\u003cbr\u003eHV順位: 99 位","\u003cb\u003e日本電信電話\u003c\u002fb\u003e（9432）\u003cbr\u003eHV: 13.92%\u003cbr\u003e21日間上昇率: -1.32%\u003cbr\u003eHV順位: 100 位"],"hovertemplate":"%{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"cmax":95.0,"cmin":-95.0,"color":[-20.97,25.62,43.27,25.66,16.88,-10.77,26.15,26.8,95.0,-1.93,22.8,-8.87,-1.37,-10.94,-11.11,52.71,16.78,44.64,-9.22,13.16,14.33,-20.61,2.07,8.28,7.98,28.7,7.36,28.52,14.63,-10.12,0.24,12.09,-4.33,2.32,-9.08,25.91,11.95,9.72,9.32,-10.21,-0.25,11.15,22.27,6.26,-7.5,-1.42,12.04,-1.2,11.06,-9.61,-2.75,-2.06,-12.47,17.03,17.46,14.71,11.99,6.91,-15.35,28.52,16.03,0.46,-8.54,12.46,8.37,8.04,8.83,-3.54,-0.91,-9.28,5.8,10.79,8.64,-19.67,2.14,-0.42,-0.69,6.74,-4.78,-5.28,-0.82,8.82,8.46,6.06,-9.55,16.18,-10.55,-0.21,-2.77,-11.4,-2.18,-9.39,4.81,3.63,5.07,-1.05,-2.27,-1.03,-4.07,-1.32],"colorbar":{"len":0.65,"thickness":14,"ticksuffix":"%","title":{"font":{"size":11},"text":"21日間\u003cbr\u003e上昇率(%)"},"y":0.5},"colorscale":[[0.0,"#4D96FF"],[0.5,"#aaaaaa"],[1.0,"#FF6B6B"]],"line":{"color":"rgba(255,255,255,0.35)","width":0.8},"size":9},"mode":"markers+text","text":["フジクラ","ソフトバンクグループ","ルネサスエレクトロニクス","住友電気工業","オリンパス","中外製薬","ファナック","キーエンス","村田製作所","ＳＭＣ","住友商事","富士通","野村総合研究所","レーザーテック","アドバンテスト","ＴＤＫ","テルモ","リクルートホールディングス","ディスコ","豊田通商","東京エレクトロン","住友不動産","ＳＯＭＰＯホールディングス","味の素","ダイキン工業","オリックス","ソニーグループ","パナソニック ホールディングス","信越化学工業","任天堂","ＬＩＮＥヤフー","りそなホールディングス","オリエンタルランド","三菱商事","日本電気","三菱ケミカルグループ","みずほフィナンシャルグループ","アシックス","三菱電機","三井不動産","ＳＵＢＡＲＵ","スズキ","ゆうちょ銀行","日本取引所グループ","アステラス製薬","東日本旅客鉄道","本田技研工業","日立製作所","クボタ","イオン","バンダイナムコホールディングス","野村ホールディングス","丸紅","旭化成","ファーストリテイリング","富士フイルムホールディングス","セコム","三井住友トラスト・ホールディングス","東海旅客鉄道","京セラ","第一生命ホールディングス","ＥＮＥＯＳホールディングス","三井物産","日産自動車","大塚ホールディングス","第一三共","三井住友フィナンシャルグループ","塩野義製薬","東京海上ホールディングス","三菱地所","日本たばこ産業","ＡＮＡホールディングス","ＭＳ＆ＡＤインシュアランスグループホールディングス","三菱重工業","デンソー","ユニ・チャーム","シマノ","ＫＤＤＩ","小松製作所","ＨＯＹＡ","トヨタ自動車","三菱ＵＦＪフィナンシャル・グループ","キリンホールディングス","ソニーフィナンシャルグループ","日本郵船","日本郵政","商船三井","伊藤忠商事","セブン＆アイ・ホールディングス","西日本旅客鉄道","アサヒグループホールディングス","大和ハウス工業","ブリヂストン","花王","キヤノン","日本製鉄","ソフトバンク","積水ハウス","武田薬品工業","日本電信電話"],"textfont":{"color":"#8a90a0","family":"'Segoe UI', sans-serif","size":8},"textposition":"top center","x":[140.68,123.45,90.43,85.59,76.52,74.94,73.14,73.13,72.68,72.48,68.34,68.25,68.15,66.39,64.88,64.46,63.97,62.4,59.5,57.07,54.71,54.7,53.28,51.56,51.53,50.22,49.99,49.25,49.07,48.58,46.73,46.69,46.58,46.51,45.54,45.3,45.29,45.14,45.09,44.35,43.81,43.76,43.07,42.04,41.51,41.5,41.18,40.89,40.13,39.81,38.97,38.3,38.0,37.0,36.83,36.78,36.43,36.14,34.83,33.92,33.85,33.57,33.46,33.13,33.04,32.7,32.63,32.07,31.82,31.36,31.05,30.85,30.79,30.62,30.27,29.83,29.69,29.25,29.14,28.68,28.67,28.58,28.5,28.08,27.81,27.02,26.24,25.94,25.75,24.13,22.67,22.41,21.38,20.46,19.54,18.38,18.18,17.67,16.32,13.92],"y":[-20.97,25.62,43.27,25.66,16.88,-10.77,26.15,26.8,95.0,-1.93,22.8,-8.87,-1.37,-10.94,-11.11,52.71,16.78,44.64,-9.22,13.16,14.33,-20.61,2.07,8.28,7.98,28.7,7.36,28.52,14.63,-10.12,0.24,12.09,-4.33,2.32,-9.08,25.91,11.95,9.72,9.32,-10.21,-0.25,11.15,22.27,6.26,-7.5,-1.42,12.04,-1.2,11.06,-9.61,-2.75,-2.06,-12.47,17.03,17.46,14.71,11.99,6.91,-15.35,28.52,16.03,0.46,-8.54,12.46,8.37,8.04,8.83,-3.54,-0.91,-9.28,5.8,10.79,8.64,-19.67,2.14,-0.42,-0.69,6.74,-4.78,-5.28,-0.82,8.82,8.46,6.06,-9.55,16.18,-10.55,-0.21,-2.77,-11.4,-2.18,-9.39,4.81,3.63,5.07,-1.05,-2.27,-1.03,-4.07,-1.32],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"shapes":[{"line":{"color":"rgba(200,200,200,0.4)","dash":"dot","width":1},"type":"line","x0":39.39,"x1":39.39,"xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"rgba(200,200,200,0.4)","dash":"dot","width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":0,"y1":0,"yref":"y"}],"annotations":[{"font":{"color":"#777","size":10},"showarrow":false,"text":"HV中央値 39.4%","x":39.39,"xanchor":"center","xref":"x","y":1,"yanchor":"bottom","yref":"y domain"},{"font":{"color":"#777","size":10},"showarrow":false,"text":" 上昇率 0%","x":1,"xanchor":"left","xref":"x domain","y":0,"yanchor":"middle","yref":"y"},{"font":{"color":"#556","size":10},"showarrow":false,"text":"高ボラ・高上昇","x":130.5392,"xref":"x","y":87.4,"yref":"y"},{"font":{"color":"#556","size":10},"showarrow":false,"text":"低ボラ・高上昇","x":24.0608,"xref":"x","y":87.4,"yref":"y"},{"font":{"color":"#556","size":10},"showarrow":false,"text":"高ボラ・下落","x":130.5392,"xref":"x","y":-19.2924,"yref":"y"},{"font":{"color":"#556","size":10},"showarrow":false,"text":"低ボラ・下落","x":24.0608,"xref":"x","y":-19.2924,"yref":"y"}],"title":{"font":{"size":17,"color":"#d1d4dc"},"text":"TOPIX100 — ヒストリカル・ボラティリティ × 21日間上昇率\u003cbr\u003e\u003csup\u003e横軸: HV（年率 %・21営業日）　縦軸: 21日間株価上昇率（%）　／　点をホバーで詳細表示\u003c\u002fsup\u003e","x":0.01},"font":{"family":"'Segoe UI', sans-serif","color":"#d1d4dc","size":12},"xaxis":{"title":{"text":"ヒストリカル・ボラティリティ HV（年率 %）"},"gridcolor":"#242836","linecolor":"#2a2e39","ticksuffix":"%"},"yaxis":{"title":{"text":"21日間株価上昇率 (%)"},"gridcolor":"#242836","linecolor":"#2a2e39","zerolinecolor":"#555","ticksuffix":"%"},"margin":{"t":110,"l":80,"r":130,"b":75},"paper_bgcolor":"#131722","plot_bgcolor":"#1e222d","hovermode":"closest","showlegend":false},                        {"responsive": true}                    )                };            </script>        </div>
+<div id="theme-widget">
+  <span id="theme-label-left">🌙 ダーク</span>
+  <label id="theme-switch" title="ダーク / ライト切り替え">
+    <input type="checkbox" id="theme-checkbox">
+    <div id="theme-track"></div>
+    <div id="theme-thumb">🌙</div>
+  </label>
+  <span id="theme-label-right">☀ ライト</span>
+</div>
+<script>
+(function () {
+    var DARK  = { scheme: 'dark',  bg: '#131722', paper: '#131722', plot: '#1e222d',
+                  font: '#d1d4dc', grid: '#242836', line: '#2a2e39', zero: '#555' };
+    var LIGHT = { scheme: 'light', bg: '#f5f6fa', paper: '#ffffff', plot: '#f5f6fa',
+                  font: '#333333', grid: '#e0e0e0', line: '#cccccc', zero: '#aaa' };
+
+    var root     = document.documentElement;
+    var checkbox = document.getElementById('theme-checkbox');
+    var thumb    = document.getElementById('theme-thumb');
+
+    function applyTheme(dark) {
+        var t = dark ? DARK : LIGHT;
+        /* ダークモード時は color-scheme:dark で Chrome の反転を抑制。
+           ライトモード時は light に切り替え（Plotly 側でも明色を指定済み）。 */
+        root.style.colorScheme = t.scheme;
+        /* Plotly div にも個別に color-scheme を付与して Chrome の un-invert を確実化 */
+        var plotDiv = document.querySelector('.plotly-graph-div');
+        if (plotDiv) plotDiv.style.colorScheme = t.scheme;
+        root.style.background  = t.bg;
+        root.setAttribute('data-theme', t.scheme);
+        document.body.style.background = t.bg;
+        checkbox.checked   = !dark;
+        thumb.textContent  = dark ? '🌙' : '☀';
+        /* Plotly チャートの色を更新 */
+        var div = document.querySelector('.plotly-graph-div');
+        if (div && typeof Plotly !== 'undefined') {
+            Plotly.relayout(div, {
+                paper_bgcolor:             t.paper,
+                plot_bgcolor:              t.plot,
+                'font.color':              t.font,
+                'title.font.color':        t.font,
+                'xaxis.gridcolor':         t.grid,
+                'xaxis.linecolor':         t.line,
+                'xaxis.tickfont.color':    t.font,
+                'xaxis.title.font.color':  t.font,
+                'yaxis.gridcolor':         t.grid,
+                'yaxis.linecolor':         t.line,
+                'yaxis.zerolinecolor':     t.zero,
+                'yaxis.tickfont.color':    t.font,
+                'yaxis.title.font.color':  t.font,
+            });
+        }
+    }
+
+    checkbox.addEventListener('change', function () {
+        applyTheme(!checkbox.checked);
+    });
+
+    /* 初期テーマを data-theme 属性（同期スクリプトが設定済み）から取得 */
+    var initDark = root.getAttribute('data-theme') !== 'light';
+    applyTheme(initDark);
+})();
+</script>
+<script id="mobile-support-js">
+(function () {
+    function adjustForMobile() {
+        var div = document.querySelector('.plotly-graph-div');
+        if (!div || typeof Plotly === 'undefined') return;
+
+        var w = window.innerWidth;
+        var isMobile = w < 768;
+        var isSmall  = w < 480;
+
+        if (!isMobile) return;
+
+        /* モバイルでフォント・マージンを拡大してタップしやすくする */
+        var fontSize  = isSmall ? 10 : 11;
+        var titleSize = isSmall ? 12 : 13;
+        var mL = isSmall ? 38 : 45;
+        var mR = isSmall ? 80 : 100;
+        var mT = isSmall ? 65 : 75;
+        var mB = isSmall ? 50 : 58;
+
+        Plotly.relayout(div, {
+            'font.size':              fontSize,
+            'title.font.size':        titleSize,
+            'xaxis.tickfont.size':    fontSize,
+            'xaxis.title.font.size':  fontSize,
+            'yaxis.tickfont.size':    fontSize,
+            'yaxis.title.font.size':  fontSize,
+            'legend.font.size':       fontSize,
+            'margin.l': mL,
+            'margin.r': mR,
+            'margin.t': mT,
+            'margin.b': mB,
+        });
+    }
+
+    /* Plotly 描画完了後に適用 */
+    window.addEventListener('load', adjustForMobile);
+    /* 画面回転時にも再適用 */
+    window.addEventListener('resize', adjustForMobile);
+})();
+</script>
+</body>
+</html>
