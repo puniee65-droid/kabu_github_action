@@ -74,8 +74,39 @@ def format_row(label, data, decimals=2):
     sign = "+" if data["change"] >= 0 else ""
     direction = "▲" if data["change"] >= 0 else "▼"
     return (
-        f"  {label:<28} {data['close']:>10,.{decimals}f}  "
-        f"{direction}{abs(data['pct']):.2f}%  ({sign}{data['change']:,.{decimals}f})\n"
+        f"  {label:<28} {data['close']:>10,.{decimals}f}"
+        f"  ({direction}{abs(data['pct']):.2f}%  {sign}{data['change']:,.{decimals}f})\n"
+    )
+
+
+VIX_GUIDE = """\
+  [VIX 目安]
+    < 15 : ✅ 低恐怖（安定）
+    15-20: 🟢 通常
+    20-25: 🟡 やや警戒
+    25-30: 🟠 警戒
+    30-40: 🔴 高警戒
+    > 40 : 🚨 極度の恐怖・危機"""
+
+NKVIX_GUIDE = """\
+  [日経VI 目安]
+    < 20 : ✅ 低恐怖（安定）
+    20-25: 🟢 通常
+    25-30: 🟡 やや警戒
+    30-40: 🔴 警戒
+    > 40 : 🚨 高警戒・危機"""
+
+
+def format_vi_row(label, data, level_fn):
+    if data is None:
+        return f"  {label:<16} データ取得失敗\n"
+    sign = "+" if data["change"] >= 0 else ""
+    direction = "▲" if data["change"] >= 0 else "▼"
+    judgment = level_fn(data["close"])
+    return (
+        f"  {label:<16} {data['close']:>6.2f}"
+        f"  ({direction}{abs(data['pct']):.2f}%  {sign}{data['change']:.2f})"
+        f"  {judgment}\n"
     )
 
 
@@ -83,65 +114,38 @@ def build_body(results, now):
     sox = results["SOX"]
     latest_date = sox["date"] if sox else "N/A"
 
+    sep = "=" * 60
+
     body = f"""朝の市場レポート
 
 取引日:   {latest_date}
 送信日時: {now.strftime("%Y年%m月%d日 %H時%M分")} (JST)
 
-{'='*60}
+{sep}
 【米国市場】
-{'='*60}
+{sep}
 {format_row("SOX（フィラデルフィア半導体）", results["SOX"])}\
 {format_row("NYダウ", results["DOW"])}\
 {format_row("NYダウ先物", results["DOW_F"])}\
 {format_row("ナスダック100", results["NDX"])}\
 {format_row("ナスダック100先物", results["NDX_F"])}
-{'='*60}
+{sep}
 【日本市場】
-{'='*60}
+{sep}
 {format_row("日経平均", results["N225"])}\
 {format_row("日経先物（ドル建て）", results["N225_F"])}
-{'='*60}
+{sep}
 【恐怖指数（ボラティリティ）】
-{'='*60}
+{sep}
+{format_vi_row("VIX（恐怖指数）", results["VIX"], vix_level)}\
+{format_vi_row("日経VI", results["NKVIX"], nkvix_level)}
+{sep}
+【VIX / 日経VI 基準値】
+{sep}
+{VIX_GUIDE}
+
+{NKVIX_GUIDE}
 """
-
-    vix = results["VIX"]
-    nkvix = results["NKVIX"]
-
-    if vix:
-        body += (
-            f"  VIX（恐怖指数）\n"
-            f"    現在値: {vix['close']:.2f}\n"
-            f"    判定:   {vix_level(vix['close'])}\n"
-            f"    前日比: {'+' if vix['change'] >= 0 else ''}{vix['change']:.2f}  ({'+' if vix['pct'] >= 0 else ''}{vix['pct']:.2f}%)\n\n"
-            f"  [VIX 目安]\n"
-            f"    < 15 : ✅ 低恐怖（安定）\n"
-            f"    15-20: 🟢 通常\n"
-            f"    20-25: 🟡 やや警戒\n"
-            f"    25-30: 🟠 警戒\n"
-            f"    30-40: 🔴 高警戒\n"
-            f"    > 40 : 🚨 極度の恐怖・危機\n\n"
-        )
-    else:
-        body += "  VIX: データ取得失敗\n\n"
-
-    if nkvix:
-        body += (
-            f"  日経VI\n"
-            f"    現在値: {nkvix['close']:.2f}\n"
-            f"    判定:   {nkvix_level(nkvix['close'])}\n"
-            f"    前日比: {'+' if nkvix['change'] >= 0 else ''}{nkvix['change']:.2f}  ({'+' if nkvix['pct'] >= 0 else ''}{nkvix['pct']:.2f}%)\n\n"
-            f"  [日経VI 目安]\n"
-            f"    < 20 : ✅ 低恐怖（安定）\n"
-            f"    20-25: 🟢 通常\n"
-            f"    25-30: 🟡 やや警戒\n"
-            f"    30-40: 🔴 警戒\n"
-            f"    > 40 : 🚨 高警戒・危機\n"
-        )
-    else:
-        body += "  日経VI: データ取得失敗\n"
-
     return body
 
 
