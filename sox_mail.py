@@ -11,8 +11,8 @@ TICKERS = {
     "SOX":       ("^SOX",   "SOX（フィラデルフィア半導体）"),
     "DOW":       ("^DJI",   "NYダウ"),
     "DOW_F":     ("YM=F",   "NYダウ先物"),
-    "NDX":       ("^NDX",   "ナスダック100"),
-    "NDX_F":     ("NQ=F",   "ナスダック100先物"),
+    "NDX":       ("^IXIC",  "ナスダック総合"),
+    "NDX_F":     ("NQ=F",   "ナスダック先物(NQ100)"),
     "N225":      ("^N225",  "日経平均"),
     "N225_F":    ("NKD=F",  "日経先物（ドル建て）"),
     "VIX":       ("^VIX",   "VIX（恐怖指数）"),
@@ -128,8 +128,8 @@ def build_body(results, now):
 {format_row("SOX（フィラデルフィア半導体）", results["SOX"])}\
 {format_row("NYダウ", results["DOW"])}\
 {format_row("NYダウ先物", results["DOW_F"])}\
-{format_row("ナスダック100", results["NDX"])}\
-{format_row("ナスダック100先物", results["NDX_F"])}
+{format_row("ナスダック総合", results["NDX"])}\
+{format_row("ナスダック先物(NQ100)", results["NDX_F"])}
 {sep}
 【日本市場】
 {sep}
