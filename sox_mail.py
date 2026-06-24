@@ -50,7 +50,8 @@ def nkvix_level(value):
 
 def fetch(symbol):
     try:
-        hist = yf.Ticker(symbol).history(period="5d")
+        hist = yf.Ticker(symbol).history(period="10d")
+        hist = hist[hist["Volume"] > 0]  # Volume=0 の未完了エントリを除外
         if len(hist) < 1:
             return None
         latest = hist.iloc[-1]
