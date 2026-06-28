@@ -127,23 +127,21 @@ def fetch(session, crumb, symbol):
 def format_row(label, data, decimals=2):
     if data is None:
         return f"  {label:<28} データ取得失敗\n"
-    sign      = "+" if data["change"] >= 0 else ""
-    direction = "▲" if data["change"] >= 0 else "▼"
+    sign = "+" if data["change"] >= 0 else "-"
     return (
         f"  {label:<28} {data['close']:>10,.{decimals}f}"
-        f"  ({direction}{abs(data['pct']):.2f}%  {sign}{data['change']:,.{decimals}f})\n"
+        f"  ({sign}{abs(data['pct']):.2f}%  {sign}{abs(data['change']):,.{decimals}f})\n"
     )
 
 
 def format_vi_row(label, data, level_fn):
     if data is None:
         return f"  {label:<16} データ取得失敗\n"
-    sign      = "+" if data["change"] >= 0 else ""
-    direction = "▲" if data["change"] >= 0 else "▼"
-    judgment  = level_fn(data["close"])
+    sign     = "+" if data["change"] >= 0 else "-"
+    judgment = level_fn(data["close"])
     return (
         f"  {label:<16} {data['close']:>6.2f}"
-        f"  ({direction}{abs(data['pct']):.2f}%  {sign}{data['change']:.2f})"
+        f"  ({sign}{abs(data['pct']):.2f}%  {sign}{abs(data['change']):.2f})"
         f"  {judgment}\n"
     )
 
@@ -193,9 +191,9 @@ def send_email(results, now):
 
     sox = results["SOX"]
     if sox:
-        direction = "▲" if sox["change"] >= 0 else "▼"
-        subject   = (f"【朝の市場レポート】{sox['date']} "
-                     f"SOX {sox['close']:,.2f} {direction}{abs(sox['pct']):.2f}%")
+        sign    = "+" if sox["change"] >= 0 else "-"
+        subject = (f"【朝の市場レポート】{sox['date']} "
+                   f"SOX {sox['close']:,.2f} {sign}{abs(sox['pct']):.2f}%")
     else:
         subject = f"【朝の市場レポート】{now.strftime('%Y-%m-%d')}"
 
