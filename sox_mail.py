@@ -88,7 +88,7 @@ def fetch(session, crumb, symbol):
     url = (
         f'https://query1.finance.yahoo.com/v8/finance/chart/'
         f'{requests.utils.quote(symbol)}'
-        f'?interval=1d&range=5d'
+        f'?interval=60m&range=60d'
         f'&crumb={requests.utils.quote(crumb)}'
         f'&includePrePost=false'
     )
@@ -107,7 +107,7 @@ def fetch(session, crumb, symbol):
 
         meta = j['chart']['result'][0].get('meta', {})
         current    = meta.get('regularMarketPrice')
-        prev_close = meta.get('chartPreviousClose') or meta.get('previousClose')
+        prev_close = meta.get('previousClose') or meta.get('chartPreviousClose')
         ts         = meta.get('regularMarketTime')
         date_str   = (datetime.fromtimestamp(ts, tz=JST).strftime('%Y-%m-%d')
                       if ts else 'N/A')
