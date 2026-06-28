@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install yfinance
+        run: pip install requests
       - name: Send SOX mail
         env:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
